@@ -11,11 +11,7 @@
           <div class="md-layout">
             <div class="md-layout-item md-size-50 md-small-size-70 md-xsmall-size-100">
               <br />
-              <md-button
-                href="https://www.youtube.com/channel/UC5AMiWqFVFxF1q9Ya1FuZ_Q"
-                class="md-success md-lg"
-                target="_blank"
-              >
+              <md-button v-on:click="showCreateConfig()" class="md-success md-lg">
                 <i class="fas fa-play"></i> Watch video
               </md-button>
             </div>
@@ -65,7 +61,7 @@
             </div>
           </div>
         </div>
-      </div>9
+      </div>
       <div class="section section-contacts">
         <div class="container">
           <div class="md-layout">
@@ -221,7 +217,10 @@
             <div class="md-layout-item md-size-50 md-small-size-100 mr-auto">
               <login-card header-color="green">
                 <h4 slot="title" class="card-title">Okta Tenant 1</h4>
-                <p slot="description" class="description">Place the Okta url and api token you want to pull data from here</p>
+                <p
+                  slot="description"
+                  class="description"
+                >Place the Okta url and api token you want to pull data from here</p>
                 <md-field class="md-form-group" slot="inputs">
                   <md-icon>web</md-icon>
                   <label>Okta Url</label>
@@ -238,7 +237,10 @@
             <div class="md-layout-item md-size-50 md-small-size-100 mr-auto">
               <login-card header-color="green">
                 <h4 slot="title" class="card-title">Okta Tenant 2</h4>
-                <p slot="description" class="description">Place the Okta url and api token you want to migrate data to here</p>
+                <p
+                  slot="description"
+                  class="description"
+                >Place the Okta url and api token you want to migrate data to here</p>
                 <md-field class="md-form-group" slot="inputs">
                   <md-icon>web</md-icon>
                   <label>okta url</label>
@@ -250,6 +252,38 @@
                   <md-input v-model="oktaTenantTwoApiToken"></md-input>
                 </md-field>
                 <md-button slot="footer" class="md-simple md-success md-lg">Get Started</md-button>
+              </login-card>
+            </div>
+          </div>
+        </form>
+      </modal>
+      <modal name="create_config" :adaptive="true" :scrollable="true" width="50%" height="auto">
+        <form class="contact-form">
+          <div class="md-layout">
+            <div class="md-layout-item md-size-100 md-small-size-100 mr-auto">
+              <login-card header-color="green">
+                <h4 slot="title" class="card-title">Your Okta Tenant</h4>
+                <p
+                  slot="description"
+                  class="description"
+                >Place the Okta url and api token you want to pull data from here</p>
+                <md-field class="md-form-group" slot="inputs">
+                  <md-icon>text-snippet</md-icon>
+                  <label>Tenant Config Name</label>
+                  <md-input v-model="oktaTenantOneUrl"></md-input>
+                </md-field>
+                <md-field class="md-form-group" slot="inputs">
+                  <md-icon>web</md-icon>
+                  <label>Okta Url</label>
+                  <md-input v-model="oktaTenantOneUrl"></md-input>
+                </md-field>
+                <md-field class="md-form-group" slot="inputs">
+                  <md-icon>lock_outline</md-icon>
+                  <label>Api Token</label>
+                  <md-input v-model="oktaTenantOneApiToken"></md-input>
+                </md-field>
+                <md-button slot="footer" class="md-simple md-success md-lg">Save</md-button>
+                <md-button slot="footer" class="md-simple md-success md-lg">Create another config</md-button>
               </login-card>
             </div>
           </div>
@@ -269,7 +303,7 @@ import Api from "@/services/api/Api";
 import { AtomSpinner } from "epic-spinners";
 import FileDownload from "js-file-download";
 import Loading from "vue-loading-overlay";
-import {LoginCard} from '@/components'
+import { LoginCard } from "@/components";
 export default {
   bodyClass: "landing-page",
   props: {
@@ -397,6 +431,9 @@ export default {
     showResponse(response) {
       this.serverResponse = response;
       this.$modal.show("response");
+    },
+    showCreateConfig() {
+      this.$modal.show("create_config");
     },
     async sendApiResource(res) {
       var component = this;
