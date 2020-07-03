@@ -11,8 +11,8 @@
           <div class="md-layout">
             <div class="md-layout-item md-size-50 md-small-size-70 md-xsmall-size-100">
               <br />
-              <md-button v-on:click="showCreateConfig()" class="md-success md-lg">
-                <i class="fas fa-play"></i> Watch video
+              <md-button v-on:click="showCreateConfig()" class="md-danger md-lg">
+                <i class="fas fa-plus"></i> Add Config
               </md-button>
             </div>
           </div>
@@ -63,7 +63,25 @@
         </div>
       </div>
       <div class="section section-contacts">
+        
         <div class="container">
+          <md-speed-dial md-direction="bottom" class="md-danger md-top-right md-just-icon md-round">
+          <md-speed-dial-target class="md-danger md-just-icon md-round">
+               <md-icon class="md-morph-initial">add</md-icon>
+                <md-icon class="md-morph-final">edit</md-icon>
+          </md-speed-dial-target>
+
+          <md-speed-dial-content>
+            <md-button class="md-danger md-round md-lg">
+              <md-icon>note</md-icon>List Environments
+            </md-button>
+
+            <md-button class="md-danger md-round md-lg">
+              <md-icon>add</md-icon>Add Configs
+            </md-button>
+          </md-speed-dial-content>
+        </md-speed-dial>
+          <md-switch class="md-top-right" v-model="autogenerate">Auto Migrate is on</md-switch>
           <div class="md-layout">
             <div
               style="align-items: flex-start;"
@@ -72,7 +90,7 @@
               <h2 class="text-center title">Okta Details</h2>
               <h4 class="text-center description">
                 Just Provide your Api key and URL. We do not transmit this anywhere else. Or Save Configs here
-                <md-button v-on:click="openConfig()" class="md-primary md-just-icon md-round">
+                <md-button v-on:click="openConfig()" class="md-info md-just-icon md-round">
                   <md-icon>settings</md-icon>
                 </md-button>
               </h4>
@@ -97,10 +115,55 @@
                 </md-field>
                 <div class="md-layout">
                   <div class="md-layout-item md-size-33 mx-auto text-center">
-                    <md-button v-on:click="pullResources()" class="md-success">Get Okta Config</md-button>
+                    <md-button v-on:click="pullResources()" class="md-danger">Get Okta Config</md-button>
                   </div>
                 </div>
               </form>
+
+               <form class="contact-form">
+          <div class="md-layout">
+            <div class="md-layout-item md-size-50 md-small-size-100 mr-auto">
+              <login-card header-color="green">
+                <h4 slot="title" class="card-title">Okta Tenant 1</h4>
+                <p
+                  slot="description"
+                  class="description"
+                >Place the Okta url and api token you want to pull data from here</p>
+                <md-field class="md-form-group" slot="inputs">
+                  <md-icon>web</md-icon>
+                  <label>Okta Url</label>
+                  <md-input v-model="oktaTenantOneUrl"></md-input>
+                </md-field>
+                <md-field class="md-form-group" slot="inputs">
+                  <md-icon>lock_outline</md-icon>
+                  <label>Api Token for first tenant</label>
+                  <md-input v-model="oktaTenantOneApiToken"></md-input>
+                </md-field>
+              </login-card>
+            </div>
+            <div class="md-layout-item md-size-50 md-small-size-100 mr-auto">
+              <login-card header-color="green">
+                <h4 slot="title" class="card-title">Okta Tenant 2</h4>
+                <p
+                  slot="description"
+                  class="description"
+                >Place the Okta url and api token you want to migrate data to here</p>
+                <md-field class="md-form-group" slot="inputs">
+                  <md-icon>web</md-icon>
+                  <label>okta url</label>
+                  <md-input v-model="oktaTenantTwoUrl"></md-input>
+                </md-field>
+                <md-field class="md-form-group" slot="inputs">
+                  <md-icon>lock_outline</md-icon>
+                  <label>Api Token for second tenant</label>
+                  <md-input v-model="oktaTenantTwoApiToken"></md-input>
+                </md-field>
+              </login-card>
+            </div>
+          </div>
+        </form>
+        <md-button v-on:click="pullResources()" class="md-danger">Get Okta Config</md-button>
+              
               <center></center>
               <vue-tabs>
                 <v-tab v-for="(table, i) in tables" v-if="renderComponent" :title="tables[i].title">
@@ -134,7 +197,7 @@
                     </md-table>
                     <md-button
                       v-on:click="sendApiResource(tables[i].title)"
-                      class="md-success"
+                      class="md-danger"
                     >Add/Remove {{ tables[i].title }}</md-button>
                   </div>
                 </v-tab>
@@ -143,10 +206,9 @@
           </div>
         </div>
       </div>
-      <md-switch v-model="autogenerate">Auto Migrate is on</md-switch>
-      <md-button v-on:click="sendSelected()" class="md-success">Generate</md-button>
-      <md-button v-on:click="show()" class="md-success">show</md-button>
-      <md-button v-on:click="showDelete()" class="md-success">delete</md-button>
+      <md-button v-on:click="sendSelected()" class="md-danger">Generate</md-button>
+      <md-button v-on:click="show()" class="md-danger">show</md-button>
+      <md-button v-on:click="showDelete()" class="md-danger">delete</md-button>
       <modal name="hello-world" :adaptive="true" :scrollable="true" width="80%" height="auto">
         <div v-for="(table, i) in addedTables" v-if="renderComponent" class="full-table">
           <h1>{{addedTables[i].title}}</h1>
@@ -231,7 +293,7 @@
                   <label>Api Token for first tenant</label>
                   <md-input v-model="oktaTenantOneApiToken"></md-input>
                 </md-field>
-                <md-button slot="footer" class="md-simple md-success md-lg">Get Started</md-button>
+                <md-button slot="footer" class="md-simple md-danger md-lg">Get Started</md-button>
               </login-card>
             </div>
             <div class="md-layout-item md-size-50 md-small-size-100 mr-auto">
@@ -251,7 +313,7 @@
                   <label>Api Token for second tenant</label>
                   <md-input v-model="oktaTenantTwoApiToken"></md-input>
                 </md-field>
-                <md-button slot="footer" class="md-simple md-success md-lg">Get Started</md-button>
+                <md-button slot="footer" class="md-simple md-danger md-lg">Get Started</md-button>
               </login-card>
             </div>
           </div>
@@ -261,7 +323,7 @@
         <form class="contact-form">
           <div class="md-layout">
             <div class="md-layout-item md-size-100 md-small-size-100 mr-auto">
-              <login-card header-color="green">
+              <login-card header-color="md-danger" class="md-danger">
                 <h4 slot="title" class="card-title">Your Okta Tenant</h4>
                 <p
                   slot="description"
@@ -282,8 +344,8 @@
                   <label>Api Token</label>
                   <md-input v-model="oktaTenantOneApiToken"></md-input>
                 </md-field>
-                <md-button slot="footer" class="md-simple md-success md-lg">Save</md-button>
-                <md-button slot="footer" class="md-simple md-success md-lg">Create another config</md-button>
+                <md-button slot="footer" class="md-simple md-danger md-lg">Save</md-button>
+                <md-button slot="footer" class="md-simple md-danger md-lg">Create another config</md-button>
               </login-card>
             </div>
           </div>
@@ -297,7 +359,7 @@
 import Spinner from "vue-spinner-component/src/Spinner.vue";
 import { VueTabs, VTab } from "vue-nav-tabs";
 import "vue-nav-tabs/themes/vue-tabs.css";
-
+import { NavTabsCard } from "@/components";
 import $ from "jquery";
 import Api from "@/services/api/Api";
 import { AtomSpinner } from "epic-spinners";
@@ -329,7 +391,8 @@ export default {
     VueTabs,
     Spinner,
     VTab,
-    LoginCard
+    LoginCard,
+    NavTabsCard
   },
   data() {
     return {
@@ -700,5 +763,9 @@ export default {
   overflow: hidden;
   box-sizing: border-box;
   background: transparent;
+}
+
+div.md-card-header.md-danger {
+  background-color: #C9446E;
 }
 </style>

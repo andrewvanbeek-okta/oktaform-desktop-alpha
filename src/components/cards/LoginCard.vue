@@ -1,6 +1,6 @@
 <template>
   <md-card class="md-card-login" :class="{ 'md-card-hidden': cardHidden }">
-    <md-card-header :class="getClass(headerColor)">
+    <md-card-header :class="getClass(headerColor)" style="background-color: #C9446E">
       <slot name="title"></slot>
       <div class="social-line">
         <slot name="buttons"></slot>
@@ -40,10 +40,13 @@ export default {
       this.cardHidden = false;
     },
     getClass: function(headerColor) {
-      return "md-card-header-" + headerColor + "";
+      return headerColor
     }
   }
 };
 </script>
 
-<style lang="css"></style>
+<style lang="css">
+
+
+</style>
