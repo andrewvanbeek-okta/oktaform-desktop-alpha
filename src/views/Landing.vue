@@ -63,24 +63,23 @@
         </div>
       </div>
       <div class="section section-contacts">
-        
         <div class="container">
           <md-speed-dial md-direction="bottom" class="md-danger md-top-right md-just-icon md-round">
-          <md-speed-dial-target class="md-danger md-just-icon md-round">
-               <md-icon class="md-morph-initial">add</md-icon>
-                <md-icon class="md-morph-final">edit</md-icon>
-          </md-speed-dial-target>
+            <md-speed-dial-target class="md-danger md-just-icon md-round">
+              <md-icon class="md-morph-initial">add</md-icon>
+              <md-icon class="md-morph-final">edit</md-icon>
+            </md-speed-dial-target>
 
-          <md-speed-dial-content>
-            <md-button class="md-danger md-round md-lg">
-              <md-icon>note</md-icon>List Environments
-            </md-button>
+            <md-speed-dial-content>
+              <md-button class="md-danger md-round md-lg">
+                <md-icon>note</md-icon>List Environments
+              </md-button>
 
-            <md-button class="md-danger md-round md-lg">
-              <md-icon>add</md-icon>Add Configs
-            </md-button>
-          </md-speed-dial-content>
-        </md-speed-dial>
+              <md-button v-on:click="showCreateConfig()" class="md-danger md-round md-lg">
+                <md-icon>add</md-icon>Add Configs
+              </md-button>
+            </md-speed-dial-content>
+          </md-speed-dial>
           <md-switch class="md-top-right" v-model="autogenerate">Auto Migrate is on</md-switch>
           <div class="md-layout">
             <div
@@ -89,81 +88,66 @@
             >
               <h2 class="text-center title">Okta Details</h2>
               <h4 class="text-center description">
-                Just Provide your Api key and URL. We do not transmit this anywhere else. Or Save Configs here
-                <md-button v-on:click="openConfig()" class="md-info md-just-icon md-round">
-                  <md-icon>settings</md-icon>
-                </md-button>
+                Just Provide your Api key and URL. We do not transmit this anywhere else.
               </h4>
               <form class="contact-form">
-                <div class="md-layout">
-                  <div class="md-layout-item md-size-50">
-                    <md-field>
-                      <label>Your Okta Url</label>
-                      <md-input v-model="url" type="text"></md-input>
-                    </md-field>
-                  </div>
-                  <div class="md-layout-item md-size-50">
-                    <md-field>
-                      <label>Your Api Key</label>
-                      <md-input v-model="apiToken" type="password"></md-input>
-                    </md-field>
-                  </div>
-                </div>
-                <md-field maxlength="5">
+                <md-field maxlength="20">
                   <label>Name Your File</label>
                   <md-input v-model="filename"></md-input>
                 </md-field>
+              </form>
+              <br><br><br>
+              <form class="contact-form">
                 <div class="md-layout">
-                  <div class="md-layout-item md-size-33 mx-auto text-center">
-                    <md-button v-on:click="pullResources()" class="md-danger">Get Okta Config</md-button>
+                  <div class="md-layout-item md-size-50 md-small-size-100 mr-auto">
+                    <login-card header-color="green">
+                      <h4 slot="title" class="card-title">Okta Tenant 1</h4>
+                      <p
+                        slot="description"
+                        class="description"
+                      >Place the Okta url and api token you want to pull data from here</p>
+                      <md-field class="md-form-group" slot="inputs">
+                        <md-icon>web</md-icon>
+                        <label>Okta Url</label>
+                        <md-input v-model="url"></md-input>
+                      </md-field>
+                      <md-field class="md-form-group" slot="inputs">
+                        <md-icon>lock_outline</md-icon>
+                        <label>Api Token for first tenant</label>
+                        <md-input v-model="apiToken"></md-input>
+                      </md-field>
+                    </login-card>
+                  </div>
+                  <div class="md-layout-item md-size-50 md-small-size-100 mr-auto">
+                    <login-card header-color="green">
+                      <h4 slot="title" class="card-title">Okta Tenant 2</h4>
+                      <p
+                        slot="description"
+                        class="description"
+                      >Place the Okta url and api token you want to migrate data to here</p>
+                      <md-field class="md-form-group" slot="inputs">
+                        <md-icon>web</md-icon>
+                        <label>okta url</label>
+                        <md-input v-model="oktaTenantTwoUrl"></md-input>
+                      </md-field>
+                      <md-field class="md-form-group" slot="inputs">
+                        <md-icon>lock_outline</md-icon>
+                        <label>Api Token for second tenant</label>
+                        <md-input v-model="oktaTenantTwoApiToken"></md-input>
+                      </md-field>
+                    </login-card>
                   </div>
                 </div>
               </form>
+              <br />
+              <br />
+              <br />
+              <div class="md-layout">
+                <div class="md-layout-item md-size-33 mx-auto text-center">
+                  <md-button v-on:click="pullResources()" class="md-danger">Get Okta Config</md-button>
+                </div>
+              </div>
 
-               <form class="contact-form">
-          <div class="md-layout">
-            <div class="md-layout-item md-size-50 md-small-size-100 mr-auto">
-              <login-card header-color="green">
-                <h4 slot="title" class="card-title">Okta Tenant 1</h4>
-                <p
-                  slot="description"
-                  class="description"
-                >Place the Okta url and api token you want to pull data from here</p>
-                <md-field class="md-form-group" slot="inputs">
-                  <md-icon>web</md-icon>
-                  <label>Okta Url</label>
-                  <md-input v-model="oktaTenantOneUrl"></md-input>
-                </md-field>
-                <md-field class="md-form-group" slot="inputs">
-                  <md-icon>lock_outline</md-icon>
-                  <label>Api Token for first tenant</label>
-                  <md-input v-model="oktaTenantOneApiToken"></md-input>
-                </md-field>
-              </login-card>
-            </div>
-            <div class="md-layout-item md-size-50 md-small-size-100 mr-auto">
-              <login-card header-color="green">
-                <h4 slot="title" class="card-title">Okta Tenant 2</h4>
-                <p
-                  slot="description"
-                  class="description"
-                >Place the Okta url and api token you want to migrate data to here</p>
-                <md-field class="md-form-group" slot="inputs">
-                  <md-icon>web</md-icon>
-                  <label>okta url</label>
-                  <md-input v-model="oktaTenantTwoUrl"></md-input>
-                </md-field>
-                <md-field class="md-form-group" slot="inputs">
-                  <md-icon>lock_outline</md-icon>
-                  <label>Api Token for second tenant</label>
-                  <md-input v-model="oktaTenantTwoApiToken"></md-input>
-                </md-field>
-              </login-card>
-            </div>
-          </div>
-        </form>
-        <md-button v-on:click="pullResources()" class="md-danger">Get Okta Config</md-button>
-              
               <center></center>
               <vue-tabs>
                 <v-tab v-for="(table, i) in tables" v-if="renderComponent" :title="tables[i].title">
@@ -766,6 +750,6 @@ export default {
 }
 
 div.md-card-header.md-danger {
-  background-color: #C9446E;
+  background-color: #c9446e;
 }
 </style>
