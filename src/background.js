@@ -5,7 +5,7 @@ const isDevelopment = process.env.NODE_ENV !== 'production'
 
 
 
-var getAppDataPath = function() {
+var getAppDataPath = function () {
   switch (process.platform) {
     case "darwin": {
       return path.join(process.env.HOME, "Library", "Application Support", "oktaform");
@@ -27,7 +27,7 @@ const init = async () => {
   var supportpath = ""
   const dotenv = require('dotenv');
   dotenv.config();
-  if(!isDevelopment) {
+  if (!isDevelopment) {
     supportpath = getAppDataPath()
     supportpath += "/"
   }
@@ -602,6 +602,40 @@ const init = async () => {
         });
   })
 
+  app.post("/environment", async function (req, res) {
+    var environment = JSON.stringify(req.body)
+    var filename = req.body.name
+    console.log(environment)
+    await fs.appendFile(supportpath + filename + ".json", environment, function (err) {
+      if (err) {
+        res.send(err)
+      } else {
+        res.send({ "message": "saved!" })
+      }
+    })
+  })
+
+  app.get("/environments", async function (req, res) {
+
+    const dirpath = path.join(__dirname, '..')
+    var EXTENSION = '.json';
+    var directory_path = supportpath
+    if(isDevelopment) {
+      directory_path = dirpath
+    }
+    fs.readdir(directory_path, function (err, files) {
+      var targetFiles = files.filter(function (file) {
+        return path.extname(file).toLowerCase() === EXTENSION;
+      });
+      res.send({ "files": targetFiles })
+    })
+  })
+
+  app.get("/environment", function(req, res){
+    console.log(req.query)
+    
+  })
+
   // listen for requests :
   const listener = app.listen(8000, function () {
     console.log(
@@ -621,6 +655,7 @@ import {
   createProtocol,
   installVueDevtools
 } from 'vue-cli-plugin-electron-builder/lib'
+import { support } from 'jquery';
 // const isDevelopment = process.env.NODE_ENV !== 'production'
 
 // Keep a global reference of the window object, if you don't, the window will

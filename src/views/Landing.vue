@@ -71,7 +71,7 @@
             </md-speed-dial-target>
 
             <md-speed-dial-content>
-              <md-button class="md-danger md-round md-lg">
+              <md-button v-on:click="getEnvironments()" class="md-danger md-round md-lg">
                 <md-icon>note</md-icon>List Environments
               </md-button>
 
@@ -87,16 +87,18 @@
               class="md-layout-item md-size-100 md-xsmall-size-100 mx-auto"
             >
               <h2 class="text-center title">Okta Details</h2>
-              <h4 class="text-center description">
-                Just Provide your Api key and URL. We do not transmit this anywhere else.
-              </h4>
+              <h4
+                class="text-center description"
+              >Just Provide your Api key and URL. We do not transmit this anywhere else.</h4>
               <form class="contact-form">
                 <md-field maxlength="20">
                   <label>Name Your File</label>
                   <md-input v-model="filename"></md-input>
                 </md-field>
               </form>
-              <br><br><br>
+              <br />
+              <br />
+              <br />
               <form class="contact-form">
                 <div class="md-layout">
                   <div class="md-layout-item md-size-50 md-small-size-100 mr-auto">
@@ -106,6 +108,18 @@
                         slot="description"
                         class="description"
                       >Place the Okta url and api token you want to pull data from here</p>
+                      <md-field class="md-form-group" slot="inputs">
+                        <label for="movie">Movie</label>
+                        <md-select v-model="tenantTwoConfig" name="movie" id="movie">
+                          <md-option value="fight-club">Fight Club</md-option>
+                          <md-option value="godfather">Godfather</md-option>
+                          <md-option value="godfather-ii">Godfather II</md-option>
+                          <md-option value="godfather-iii">Godfather III</md-option>
+                          <md-option value="godfellas">Godfellas</md-option>
+                          <md-option value="pulp-fiction">Pulp Fiction</md-option>
+                          <md-option value="scarface">Scarface</md-option>
+                        </md-select>
+                      </md-field>
                       <md-field class="md-form-group" slot="inputs">
                         <md-icon>web</md-icon>
                         <label>Okta Url</label>
@@ -125,6 +139,18 @@
                         slot="description"
                         class="description"
                       >Place the Okta url and api token you want to migrate data to here</p>
+                            <md-field class="md-form-group" slot="inputs">
+                        <label for="movie">Movie</label>
+                        <md-select v-model="tenantTwoConfig" name="movie" id="movie">
+                          <md-option value="fight-club">Fight Club</md-option>
+                          <md-option value="godfather">Godfather</md-option>
+                          <md-option value="godfather-ii">Godfather II</md-option>
+                          <md-option value="godfather-iii">Godfather III</md-option>
+                          <md-option value="godfellas">Godfellas</md-option>
+                          <md-option value="pulp-fiction">Pulp Fiction</md-option>
+                          <md-option value="scarface">Scarface</md-option>
+                        </md-select>
+                      </md-field>
                       <md-field class="md-form-group" slot="inputs">
                         <md-icon>web</md-icon>
                         <label>okta url</label>
@@ -257,52 +283,6 @@
           <atom-spinner :animation-duration="1000" :size="60" :color="'#ff1d5e'" />
         </center>
       </modal>
-      <modal name="configure" :adaptive="true" :scrollable="true" width="50%" height="auto">
-        <form class="contact-form">
-          <div class="md-layout">
-            <div class="md-layout-item md-size-50 md-small-size-100 mr-auto">
-              <login-card header-color="green">
-                <h4 slot="title" class="card-title">Okta Tenant 1</h4>
-                <p
-                  slot="description"
-                  class="description"
-                >Place the Okta url and api token you want to pull data from here</p>
-                <md-field class="md-form-group" slot="inputs">
-                  <md-icon>web</md-icon>
-                  <label>Okta Url</label>
-                  <md-input v-model="oktaTenantOneUrl"></md-input>
-                </md-field>
-                <md-field class="md-form-group" slot="inputs">
-                  <md-icon>lock_outline</md-icon>
-                  <label>Api Token for first tenant</label>
-                  <md-input v-model="oktaTenantOneApiToken"></md-input>
-                </md-field>
-                <md-button slot="footer" class="md-simple md-danger md-lg">Get Started</md-button>
-              </login-card>
-            </div>
-            <div class="md-layout-item md-size-50 md-small-size-100 mr-auto">
-              <login-card header-color="green">
-                <h4 slot="title" class="card-title">Okta Tenant 2</h4>
-                <p
-                  slot="description"
-                  class="description"
-                >Place the Okta url and api token you want to migrate data to here</p>
-                <md-field class="md-form-group" slot="inputs">
-                  <md-icon>web</md-icon>
-                  <label>okta url</label>
-                  <md-input v-model="oktaTenantTwoUrl"></md-input>
-                </md-field>
-                <md-field class="md-form-group" slot="inputs">
-                  <md-icon>lock_outline</md-icon>
-                  <label>Api Token for second tenant</label>
-                  <md-input v-model="oktaTenantTwoApiToken"></md-input>
-                </md-field>
-                <md-button slot="footer" class="md-simple md-danger md-lg">Get Started</md-button>
-              </login-card>
-            </div>
-          </div>
-        </form>
-      </modal>
       <modal name="create_config" :adaptive="true" :scrollable="true" width="50%" height="auto">
         <form class="contact-form">
           <div class="md-layout">
@@ -316,19 +296,23 @@
                 <md-field class="md-form-group" slot="inputs">
                   <md-icon>text-snippet</md-icon>
                   <label>Tenant Config Name</label>
-                  <md-input v-model="oktaTenantOneUrl"></md-input>
+                  <md-input v-model="environmentName"></md-input>
                 </md-field>
                 <md-field class="md-form-group" slot="inputs">
                   <md-icon>web</md-icon>
                   <label>Okta Url</label>
-                  <md-input v-model="oktaTenantOneUrl"></md-input>
+                  <md-input v-model="environmentUrl"></md-input>
                 </md-field>
                 <md-field class="md-form-group" slot="inputs">
                   <md-icon>lock_outline</md-icon>
                   <label>Api Token</label>
-                  <md-input v-model="oktaTenantOneApiToken"></md-input>
+                  <md-input v-model="environmentToken"></md-input>
                 </md-field>
-                <md-button slot="footer" class="md-simple md-danger md-lg">Save</md-button>
+                <md-button
+                  slot="footer"
+                  v-on:click="saveEnvironment()"
+                  class="md-simple md-danger md-lg"
+                >Save</md-button>
                 <md-button slot="footer" class="md-simple md-danger md-lg">Create another config</md-button>
               </login-card>
             </div>
@@ -383,7 +367,11 @@ export default {
       url: null,
       resources: {},
       policies: [],
+      tenantTwoConfig: "",
       autogenerate: true,
+      environmentUrl: "",
+      environmentToken: "",
+      environmentName: "",
       rules: [],
       serverResponse: "",
       oktaTenantOneUrl: "",
@@ -500,6 +488,24 @@ export default {
       } else {
         component.show();
       }
+    },
+    async saveEnvironment() {
+      var component = this;
+      var saveEnv = await component.$http.post(
+        "http://localhost:8000/environment",
+        {
+          url: component.environmentUrl,
+          apiToken: component.environmentToken,
+          name: component.environmentName
+        }
+      );
+    },
+    async getEnvironments() {
+      var component = this;
+      var getEnvs = await component.$http.get(
+        "http://localhost:8000/environments"
+      );
+      console.log(getEnvs);
     },
     async checkIfAuthServer(key, item) {
       var component = this;
