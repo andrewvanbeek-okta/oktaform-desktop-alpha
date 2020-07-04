@@ -492,7 +492,10 @@ export default {
           name: component.environmentName
         }
       );
-      component.$router.go()
+      console.log(saveEnv)
+      if(saveEnv.data.message === "saved!") {
+        component.getEnvironments()
+      }
     },
     async getEnvironments() {
       var component = this;
