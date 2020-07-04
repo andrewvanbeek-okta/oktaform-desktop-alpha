@@ -110,14 +110,8 @@
                       >Place the Okta url and api token you want to pull data from here</p>
                       <md-field class="md-form-group" slot="inputs">
                         <label for="movie">Movie</label>
-                        <md-select v-model="tenantTwoConfig" name="movie" id="movie">
-                          <md-option value="fight-club">Fight Club</md-option>
-                          <md-option value="godfather">Godfather</md-option>
-                          <md-option value="godfather-ii">Godfather II</md-option>
-                          <md-option value="godfather-iii">Godfather III</md-option>
-                          <md-option value="godfellas">Godfellas</md-option>
-                          <md-option value="pulp-fiction">Pulp Fiction</md-option>
-                          <md-option value="scarface">Scarface</md-option>
+                        <md-select v-model="tenantOneConfig" @md-selected="applyEnvironmentOne()" name="movie" id="movie">
+                          <md-option v-for="env in environments" :value="env.name">{{env.name}}</md-option>
                         </md-select>
                       </md-field>
                       <md-field class="md-form-group" slot="inputs">
@@ -141,14 +135,8 @@
                       >Place the Okta url and api token you want to migrate data to here</p>
                             <md-field class="md-form-group" slot="inputs">
                         <label for="movie">Movie</label>
-                        <md-select v-model="tenantTwoConfig" name="movie" id="movie">
-                          <md-option value="fight-club">Fight Club</md-option>
-                          <md-option value="godfather">Godfather</md-option>
-                          <md-option value="godfather-ii">Godfather II</md-option>
-                          <md-option value="godfather-iii">Godfather III</md-option>
-                          <md-option value="godfellas">Godfellas</md-option>
-                          <md-option value="pulp-fiction">Pulp Fiction</md-option>
-                          <md-option value="scarface">Scarface</md-option>
+                        <md-select v-model="tenantTwoConfig" @md-selected="applyEnvironmentTwo()" name="movie" id="movie">
+                         <md-option v-for="env in environments" :value="env.name">{{env.name}}</md-option>
                         </md-select>
                       </md-field>
                       <md-field class="md-form-group" slot="inputs">
@@ -367,6 +355,7 @@ export default {
       url: null,
       resources: {},
       policies: [],
+      tenantOneConfig: "",
       tenantTwoConfig: "",
       autogenerate: true,
       environmentUrl: "",
@@ -427,6 +416,10 @@ export default {
     },
     hide() {
       this.$modal.hide("hello-world");
+    },
+     changeItem(item) {
+       console.log("TESTSTS")
+      console.log(item)
     },
     sendSelected() {
       var component = this;
@@ -507,6 +500,29 @@ export default {
         "http://localhost:8000/environments"
       );
       console.log(getEnvs);
+      component.environments = getEnvs.data.files
+    },
+    async findEnvironment(name) {
+      var environment = await this.environments.find(function(environment_config) {
+        return environment_config.name === name
+      }) 
+      return environment
+    },
+    async applyEnvironmentOne() {
+      var environmentConfigToApply = await this.findEnvironment(this.tenantOneConfig)
+      console.log("##########")
+      console.log(environmentConfigToApply)
+      console.log("##########")
+      this.url = environmentConfigToApply.contents.url
+      this.apiToken = environmentConfigToApply.contents.apiToken
+    },
+    async applyEnvironmentTwo() {
+      var environmentConfigToApply = await this.findEnvironment(this.tenantTwoConfig)
+      console.log("##########")
+      console.log(environmentConfigToApply)
+      console.log("##########")
+      this.oktaTenantTwoUrl = environmentConfigToApply.contents.url
+      this.oktaTenantTwoApiToken = environmentConfigToApply.contents.apiToken
     },
     async checkIfAuthServer(key, item) {
       var component = this;
