@@ -372,6 +372,7 @@ export default {
       environmentUrl: "",
       environmentToken: "",
       environmentName: "",
+      environments: [],
       rules: [],
       serverResponse: "",
       oktaTenantOneUrl: "",
@@ -685,6 +686,9 @@ export default {
 
       return `${count} user${plural} selected`;
     }
+  },
+  mounted(){
+    this.getEnvironments()
   },
   computed: {
     headerStyle() {

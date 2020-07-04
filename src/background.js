@@ -606,7 +606,7 @@ const init = async () => {
     var environment = JSON.stringify(req.body)
     var filename = req.body.name
     console.log(environment)
-    await fs.appendFile(supportpath + filename + ".json", environment, function (err) {
+    await fs.appendFile(supportpath + "oktaform_env_" + filename + ".json", environment, function (err) {
       if (err) {
         res.send(err)
       } else {
@@ -625,9 +625,23 @@ const init = async () => {
     }
     fs.readdir(directory_path, function (err, files) {
       var targetFiles = files.filter(function (file) {
-        return path.extname(file).toLowerCase() === EXTENSION;
+        return path.extname(file).toLowerCase() === EXTENSION && path.basename(file).includes("oktaform_env_")
       });
-      res.send({ "files": targetFiles })
+  
+      var filestosend = []
+      console.log(targetFiles)
+      targetFiles.forEach(async function(file, index, array) {
+        if(path.extname(file).toLowerCase() === EXTENSION && path.basename(file).includes("oktaform_env_")) {
+          var contents = await fs.readFileSync(file).toString()
+          console.log(contents.toString())
+          filestosend.push({name: file, contents: JSON.parse(contents)})
+          console.log(filestosend)
+          if (index === (array.length - 1)) {
+            console.log(filestosend)
+            res.send({ "files": filestosend })
+          }
+        }
+      })
     })
   })
 
