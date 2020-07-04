@@ -109,8 +109,8 @@
                         class="description"
                       >Place the Okta url and api token you want to pull data from here</p>
                       <md-field class="md-form-group" slot="inputs">
-                        <label for="movie">Movie</label>
-                        <md-select v-model="tenantOneConfig" @md-selected="applyEnvironmentOne()" name="movie" id="movie">
+                        <label for="Config">Config</label>
+                        <md-select v-model="tenantOneConfig" @md-selected="applyEnvironmentOne()" name="Config" id="Config">
                           <md-option v-for="env in environments" :value="env.name">{{env.name}}</md-option>
                         </md-select>
                       </md-field>
@@ -134,8 +134,8 @@
                         class="description"
                       >Place the Okta url and api token you want to migrate data to here</p>
                             <md-field class="md-form-group" slot="inputs">
-                        <label for="movie">Movie</label>
-                        <md-select v-model="tenantTwoConfig" @md-selected="applyEnvironmentTwo()" name="movie" id="movie">
+                        <label for="Config">Config</label>
+                        <md-select v-model="tenantTwoConfig" @md-selected="applyEnvironmentTwo()" name="Config" id="Config">
                          <md-option v-for="env in environments" :value="env.name">{{env.name}}</md-option>
                         </md-select>
                       </md-field>
@@ -301,7 +301,6 @@
                   v-on:click="saveEnvironment()"
                   class="md-simple md-danger md-lg"
                 >Save</md-button>
-                <md-button slot="footer" class="md-simple md-danger md-lg">Create another config</md-button>
               </login-card>
             </div>
           </div>
@@ -493,6 +492,7 @@ export default {
           name: component.environmentName
         }
       );
+      component.$router.go()
     },
     async getEnvironments() {
       var component = this;
