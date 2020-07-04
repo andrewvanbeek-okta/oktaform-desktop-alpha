@@ -25,11 +25,13 @@ var getAppDataPath = function () {
 
 const init = async () => {
   var supportpath = ""
+  var supportdirpath = ""
   const dotenv = require('dotenv');
   dotenv.config();
   if (!isDevelopment) {
     supportpath = getAppDataPath()
     supportpath += "/"
+    supportdirpath = getAppDataPath()
   }
 
   // server.js
@@ -619,35 +621,39 @@ const init = async () => {
 
     const dirpath = path.join(__dirname, '..')
     var EXTENSION = '.json';
-    var directory_path = supportpath
-    if(isDevelopment) {
+    var directory_path = supportdirpath
+    if (isDevelopment) {
       directory_path = dirpath
     }
     fs.readdir(directory_path, function (err, files) {
       var targetFiles = files.filter(function (file) {
         return path.extname(file).toLowerCase() === EXTENSION && path.basename(file).includes("oktaform_env_")
       });
-  
-      var filestosend = []
-      console.log(targetFiles)
-      targetFiles.forEach(async function(file, index, array) {
-        if(path.extname(file).toLowerCase() === EXTENSION && path.basename(file).includes("oktaform_env_")) {
-          var contents = await fs.readFileSync(file).toString()
-          console.log(contents.toString())
-          filestosend.push({name: file, contents: JSON.parse(contents)})
-          console.log(filestosend)
-          if (index === (array.length - 1)) {
+      if (targetFiles === undefined || targetFiles.length == 0) {
+        // array empty or does not exist
+        res.send({ error: "no files found", currentpath: directory_path })
+      } else {
+        var filestosend = []
+        console.log(targetFiles)
+        targetFiles.forEach(async function (file, index, array) {
+          if (path.extname(file).toLowerCase() === EXTENSION && path.basename(file).includes("oktaform_env_")) {
+            var contents = await fs.readFileSync(supportpath + file).toString()
+            console.log(contents.toString())
+            filestosend.push({ name: file, contents: JSON.parse(contents) })
             console.log(filestosend)
-            res.send({ "files": filestosend })
+            if (index === (array.length - 1)) {
+              console.log(filestosend)
+              res.send({ "files": filestosend })
+            }
           }
-        }
-      })
+        })
+      }
     })
   })
 
-  app.get("/environment", function(req, res){
+  app.get("/environment", function (req, res) {
     console.log(req.query)
-    
+
   })
 
   // listen for requests :
