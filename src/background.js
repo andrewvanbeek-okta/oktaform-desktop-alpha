@@ -573,21 +573,40 @@ const init = async () => {
   })
 
   app.get("/files", function (req, res) {
-    var glob = require("glob")
-    glob(supportpath + '**/*.tf', {}, (err, files) => { //not sure about this one
+    // var glob = require("glob")
+    // glob(supportpath + '**/*.tf', {}, (err, files) => { //not sure about this one
+    //   var filestosend = []
+    //   files.forEach(function (file) {
+    //     var value = __dirname + "/"
+    //     var filename = file.split(value)[1]
+    //     console.log(filename)
+    //     if (filename != "init.tf") {
+    //       var timestamp = fs.statSync(file).mtime.getTime()
+    //       const date = new Date(timestamp);
+    //       filestosend.push({ "name": filename, "timestamp": date, fullfilepath: file })
+    //     }
+    //   })
+    //   console.log(filestosend)
+    //   res.send({ "files": filestosend })
+    // })
+    const dirpath = path.join(__dirname, '..')
+    var EXTENSION = '.tf';
+    var directory_path = supportdirpath
+    if (isDevelopment) {
+      directory_path = dirpath
+    }
+    fs.readdir(directory_path, function (err, files) {
       var filestosend = []
-      files.forEach(function (file) {
-        var value = __dirname + "/"
-        var filename = file.split(value)[1]
-        console.log(filename)
-        if (filename != "init.tf") {
+      var targetFiles = files.filter(function (file) {
+        return path.extname(file).toLowerCase() === EXTENSION && path.basename(file) !== "init.tf"
+      });
+      console.log(targetFiles)
+      targetFiles.forEach(function(file){
           var timestamp = fs.statSync(file).mtime.getTime()
           const date = new Date(timestamp);
-          filestosend.push({ "name": filename, "timestamp": date, fullfilepath: file })
-        }
+          filestosend.push({ "name": path.basename(file), "timestamp": date, fullfilepath: file })
+          res.send({ "files": filestosend })
       })
-      console.log(filestosend)
-      res.send({ "files": filestosend })
     })
   })
 
@@ -660,7 +679,7 @@ const init = async () => {
     console.log(req.body)
     var config = req.body
     var orgname = req.body.url.split("https://")[1].split(".")[0]
-    var orgtype = req.body.url.split("https://")[1].split(".")[1]
+    var orgtype = req.body.url.split("https://")[1].split(".")[1] + "." + req.body.url.split("https://")[1].split(".")[2]
     var tfFile = 
     `provider "okta" {
       org_name  = "${orgname}" 

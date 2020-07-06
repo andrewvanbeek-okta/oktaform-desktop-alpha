@@ -74,6 +74,9 @@
               <md-button v-on:click="getEnvironments()" class="md-danger md-round md-lg">
                 <md-icon>note</md-icon>List Environments
               </md-button>
+              <md-button v-on:click="showDelete()" class="md-danger md-round md-lg">
+                <md-icon>note</md-icon>List Terraform Files
+              </md-button>
 
               <md-button v-on:click="showCreateConfig()" class="md-danger md-round md-lg">
                 <md-icon>add</md-icon>Add Configs
