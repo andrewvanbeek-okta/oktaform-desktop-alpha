@@ -128,7 +128,7 @@
                       <md-field class="md-form-group" slot="inputs">
                         <md-icon>lock_outline</md-icon>
                         <label>Api Token for first tenant</label>
-                        <md-input v-model="apiToken"></md-input>
+                        <md-input type="password" v-model="apiToken"></md-input>
                       </md-field>
                     </login-card>
                   </div>
@@ -153,7 +153,7 @@
                       <md-field class="md-form-group" slot="inputs">
                         <md-icon>lock_outline</md-icon>
                         <label>Api Token for second tenant</label>
-                        <md-input v-model="oktaTenantTwoApiToken"></md-input>
+                        <md-input type="password" v-model="oktaTenantTwoApiToken"></md-input>
                       </md-field>
                     </login-card>
                   </div>
@@ -290,17 +290,21 @@
                 <md-field class="md-form-group" slot="inputs">
                   <md-icon>text-snippet</md-icon>
                   <label>Tenant Config Name</label>
-                  <md-input v-model="environmentName"></md-input>
+                  <md-input v-on:change="checkIfEmpty(environmentName)" v-model="environmentName"></md-input>
+                  <span v-if="emptyNameField" class="md-danger" style="color: red;">Cannot be empty</span>
                 </md-field>
                 <md-field class="md-form-group" slot="inputs">
                   <md-icon>web</md-icon>
                   <label>Okta Url</label>
-                  <md-input v-model="environmentUrl"></md-input>
+                  <md-input v-on:change="checkIfUrl()" v-model="environmentUrl"></md-input>
+                  <span v-if="badUrl || emptyField" class="md-danger" style="color: red;">Not a proper Okta Url</span>
+                  <span v-if="emptyUrlField" class="md-danger" style="color: red;">Cannot be empty</span>
                 </md-field>
                 <md-field class="md-form-group" slot="inputs">
                   <md-icon>lock_outline</md-icon>
                   <label>Api Token</label>
-                  <md-input v-model="environmentToken"></md-input>
+                  <md-input v-on:change="checkIfEmpty(environmentToken)" v-model="environmentToken"></md-input>
+                  <span v-if="emptyTokenField" class="md-danger" style="color: red;">Cannot be empty</span>
                 </md-field>
                 <md-button
                   slot="footer"
@@ -360,8 +364,12 @@ export default {
       url: null,
       resources: {},
       policies: [],
+      badUrl: false,
       tenantOneConfig: "",
       tenantTwoConfig: "",
+      emptyTokenField: "",
+      emptyUrlField: "",
+      emptyNameField: "",
       autogenerate: true,
       environmentUrl: "",
       environmentToken: "",
@@ -392,6 +400,26 @@ export default {
         this.$modal.show("spinner");
       } else {
         this.$modal.hide("spinner");
+      }
+    },
+    checkIfUrl() {
+      this.checkIfEmpty()
+      if(this.environmentUrl.includes("okta") && this.environmentUrl.includes("https://")) {
+        this.badUrl = false
+        this.emptyUrlField = false
+      } else {
+        this.badUrl = true
+      }
+    },
+    checkIfEmpty() {
+      if(this.environmentName != "") {
+        this.emptyNameField = false
+      } 
+      if(this.environmentToken != "") {
+        this.emptyTokenField = false
+      }
+       if(this.environmentUrl != "") {
+        this.emptyUrlField= false
       }
     },
     show() {
@@ -448,7 +476,10 @@ export default {
           //let blob = new Blob([response.data], { type: 'application/tf' }),
           component.spinning(false);
           component.showResponse(response.data);
-          FileDownload(response.data, component.filename + ".tf");
+          if(!autogenerate) {
+             FileDownload(response.data, component.filename + ".tf");
+          } 
+          component.resetPage()
         })
         .catch(e => {
           console.log(e);
@@ -493,8 +524,10 @@ export default {
       }
     },
     async saveEnvironment() {
+     
       var component = this;
-      var saveEnv = await component.$http.post(
+       if(component.environmentUrl != "" && component.environmentName != "" && component.environmentToken != "" && !component.badUrl) {
+              var saveEnv = await component.$http.post(
         "http://localhost:8000/environment",
         {
           url: component.environmentUrl,
@@ -506,6 +539,18 @@ export default {
       if(saveEnv.data.message === "saved!") {
         component.getEnvironments()
       }
+       } else {
+         if(component.environmentUrl == "") {
+           component.emptyUrlField = true
+         }
+        if(component.environmentToken == "") {
+           component.emptyTokenField = true
+         }
+        if(component.environmentName == "") {
+           component.emptyNameField = true
+         }    
+       }
+ 
     },
     async getEnvironments() {
       var component = this;
@@ -536,7 +581,7 @@ export default {
       console.log("##########")
       this.oktaTenantTwoUrl = environmentConfigToApply.contents.url
       this.oktaTenantTwoApiToken = environmentConfigToApply.contents.apiToken
-      var setConfig = await this.$http.post("http://localhost:8000/migrationConfig", environmentConfigToApply.contents)
+      var setConfig = await this.$http.post("http://localhost:8000/migrationConfig", environmentConfigToApply)
       console.log(setConfig)
     },
     async checkIfAuthServer(key, item) {

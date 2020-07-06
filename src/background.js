@@ -549,17 +549,6 @@ const init = async () => {
     });
   });
 
-  app.delete("/file", function (req, res) {
-    // var filename = req.query.filename
-    // fs.unlink(filename + ".tf", (error) => {
-    //   if (!error) {
-    //     console.log("deleted")
-    //   } else {
-    //     console.log(error)
-    //   }
-    // })
-  })
-
   app.delete("/removeFile", function (req, res) {
     var filename = req.query.filename
     fs.unlink(supportpath + filename, (error) => {
@@ -573,22 +562,6 @@ const init = async () => {
   })
 
   app.get("/files", function (req, res) {
-    // var glob = require("glob")
-    // glob(supportpath + '**/*.tf', {}, (err, files) => { //not sure about this one
-    //   var filestosend = []
-    //   files.forEach(function (file) {
-    //     var value = __dirname + "/"
-    //     var filename = file.split(value)[1]
-    //     console.log(filename)
-    //     if (filename != "init.tf") {
-    //       var timestamp = fs.statSync(file).mtime.getTime()
-    //       const date = new Date(timestamp);
-    //       filestosend.push({ "name": filename, "timestamp": date, fullfilepath: file })
-    //     }
-    //   })
-    //   console.log(filestosend)
-    //   res.send({ "files": filestosend })
-    // })
     const dirpath = path.join(__dirname, '..')
     var EXTENSION = '.tf';
     var directory_path = supportdirpath
@@ -677,17 +650,32 @@ const init = async () => {
 
   app.post("/migrationConfig", function(req, res){
     console.log(req.body)
-    var config = req.body
-    var orgname = req.body.url.split("https://")[1].split(".")[0]
-    var orgtype = req.body.url.split("https://")[1].split(".")[1] + "." + req.body.url.split("https://")[1].split(".")[2]
+    var config = req.body.contents
+    var orgname = config.url.split("https://")[1].split(".")[0]
+    var orgtype = config.url.split("https://")[1].split(".")[1] + "." + config.url.split("https://")[1].split(".")[2]
     var tfFile = 
     `provider "okta" {
       org_name  = "${orgname}" 
-      api_token = "${req.body.apiToken}"
+      api_token = "${config.apiToken}"
       base_url  = "${orgtype}"
     }`
-    fs.writeFileSync(supportpath + "init.tf", tfFile);
-    res.send({message: "file was overwritten"}) 
+    var configDir = req.body.name.split(".json")[0]
+    var dir = ""
+    if(isDevelopment) {
+      dir = './' + configDir
+    } else {
+      dir = './' + supportpath + configDir
+    }
+ 
+
+    if (!fs.existsSync(dir)){
+        fs.mkdirSync(dir);
+        fs.writeFileSync(supportpath + configDir + "/" + "init.tf", tfFile)
+        res.send({message: "file was overwritten"}) 
+    } else {
+      fs.writeFileSync(supportpath + configDir + "/" + "init.tf", tfFile);
+      res.send({message: "file was overwritten"}) 
+    }
   })
 
   // listen for requests :
