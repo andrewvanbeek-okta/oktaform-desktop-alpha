@@ -81,6 +81,9 @@
               <md-button v-on:click="showCreateConfig()" class="md-danger md-round md-lg">
                 <md-icon>add</md-icon>Add Configs
               </md-button>
+              <md-button v-on:click="resetPage()" class="md-danger md-round md-lg">
+                <md-icon>refresh</md-icon>Reset
+              </md-button>
             </md-speed-dial-content>
           </md-speed-dial>
           <md-switch class="md-top-right" v-model="autogenerate">Auto Migrate is on</md-switch>
@@ -408,6 +411,10 @@ export default {
     async openConfig() {
       console.log("JKNDKBFKDBK");
       this.$modal.show("configure");
+    },
+    async resetPage(){
+      console.log(this.$router)
+      window.location.reload()
     },
     async showDelete() {
       var component = this;
