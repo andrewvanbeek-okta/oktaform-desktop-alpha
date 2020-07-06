@@ -1,5 +1,5 @@
 provider "okta" {
-  org_name  = "dev-887179"
-  api_token = "your token"
-  base_url  = "okta.com"
-}
+      org_name  = "avb" 
+      api_token = "00ZbWWipY_iwfRviKsqZalZrbT0I_nA_TB_k6cKxYG"
+      base_url  = "oktapreview"
+    }

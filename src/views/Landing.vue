@@ -526,6 +526,8 @@ export default {
       console.log("##########")
       this.oktaTenantTwoUrl = environmentConfigToApply.contents.url
       this.oktaTenantTwoApiToken = environmentConfigToApply.contents.apiToken
+      var setConfig = await this.$http.post("http://localhost:8000/migrationConfig", environmentConfigToApply.contents)
+      console.log(setConfig)
     },
     async checkIfAuthServer(key, item) {
       var component = this;

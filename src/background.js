@@ -656,6 +656,21 @@ const init = async () => {
 
   })
 
+  app.post("/migrationConfig", function(req, res){
+    console.log(req.body)
+    var config = req.body
+    var orgname = req.body.url.split("https://")[1].split(".")[0]
+    var orgtype = req.body.url.split("https://")[1].split(".")[1]
+    var tfFile = 
+    `provider "okta" {
+      org_name  = "${orgname}" 
+      api_token = "${req.body.apiToken}"
+      base_url  = "${orgtype}"
+    }`
+    fs.writeFileSync(supportpath + "init.tf", tfFile);
+    res.send({message: "file was overwritten"}) 
+  })
+
   // listen for requests :
   const listener = app.listen(8000, function () {
     console.log(

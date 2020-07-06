@@ -14,7 +14,8 @@ var hcltojson = require("hcl-to-json");
 var fs = require("fs");
 var bodyParser = require("body-parser");
 var tmp = require('tmp');
-var history = require('connect-history-api-fallback')
+var history = require('connect-history-api-fallback');
+const { support } = require('jquery');
 app.use(history());
 process.on('SIGINT', function() {
   console.log( "\nGracefully shutting down from SIGINT (Ctrl-C)" );
@@ -482,6 +483,11 @@ app.get("/resource", function(req, res) {
     res.send(body);
   });
 });
+
+app.post("/migrationConfig", function(req, res){
+  var config = req.body
+  fs.writeFileSync(supportpath + "init.tf", data); 
+})
 
 app.post("/resource", function(req, res) {
   var request = require("request");
