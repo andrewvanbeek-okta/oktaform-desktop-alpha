@@ -117,7 +117,7 @@
                       <md-field class="md-form-group" slot="inputs">
                         <label for="Config">Config</label>
                         <md-select v-model="tenantOneConfig" @md-selected="applyEnvironmentOne()" name="Config" id="Config">
-                          <md-option v-for="env in environments" :value="env.name">{{env.name}}</md-option>
+                          <md-option v-for="env in environments" :value="env.name">{{env.name.split("oktaform_env_")[1]}}</md-option>
                         </md-select>
                       </md-field>
                     </login-card>
@@ -132,7 +132,7 @@
                             <md-field class="md-form-group" slot="inputs">
                         <label for="Config">Config</label>
                         <md-select v-model="tenantTwoConfig" @md-selected="applyEnvironmentTwo()" name="Config" id="Config">
-                         <md-option v-for="env in environments" :value="env">{{env.name}}</md-option>
+                         <md-option v-for="env in environments" :value="env">{{env.name.split("oktaform_env_")[1]}}</md-option>
                         </md-select>
                       </md-field>
                     </login-card>
