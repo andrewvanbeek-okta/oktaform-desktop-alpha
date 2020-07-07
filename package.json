@@ -19,6 +19,7 @@
   "main": "background.js",
   "dependencies": {
     "@hapi/hapi": "^19.1.1",
+    "@okta/okta-vue": "^2.0.0",
     "axios": "^0.19.0",
     "babel-helper-vue-jsx-merge-props": "^2.0.3",
     "concurrently": "^5.2.0",
@@ -50,6 +51,12 @@
     "vue-spinner": "^1.0.3",
     "vue-spinner-component": "^1.0.5",
     "vuetify": "^2.0.14"
+  },
+  "protocols": {
+    "name": "oktaform-protocol",
+    "schemes": [
+      "oktaform"
+    ]
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "3.9.2",

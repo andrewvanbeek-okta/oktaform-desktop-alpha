@@ -117,18 +117,8 @@
                       <md-field class="md-form-group" slot="inputs">
                         <label for="Config">Config</label>
                         <md-select v-model="tenantOneConfig" @md-selected="applyEnvironmentOne()" name="Config" id="Config">
-                          <md-option v-for="env in environments" :value="env.name">{{env.name}}</md-option>
+                          <md-option v-for="env in environments" :value="env">{{env}}</md-option>
                         </md-select>
-                      </md-field>
-                      <md-field class="md-form-group" slot="inputs">
-                        <md-icon>web</md-icon>
-                        <label>Okta Url</label>
-                        <md-input v-model="url"></md-input>
-                      </md-field>
-                      <md-field class="md-form-group" slot="inputs">
-                        <md-icon>lock_outline</md-icon>
-                        <label>Api Token for first tenant</label>
-                        <md-input type="password" v-model="apiToken"></md-input>
                       </md-field>
                     </login-card>
                   </div>
@@ -142,18 +132,8 @@
                             <md-field class="md-form-group" slot="inputs">
                         <label for="Config">Config</label>
                         <md-select v-model="tenantTwoConfig" @md-selected="applyEnvironmentTwo()" name="Config" id="Config">
-                         <md-option v-for="env in environments" :value="env.name">{{env.name}}</md-option>
+                         <md-option v-for="env in environments" :value="env">{{env}}</md-option>
                         </md-select>
-                      </md-field>
-                      <md-field class="md-form-group" slot="inputs">
-                        <md-icon>web</md-icon>
-                        <label>okta url</label>
-                        <md-input v-model="oktaTenantTwoUrl"></md-input>
-                      </md-field>
-                      <md-field class="md-form-group" slot="inputs">
-                        <md-icon>lock_outline</md-icon>
-                        <label>Api Token for second tenant</label>
-                        <md-input type="password" v-model="oktaTenantTwoApiToken"></md-input>
                       </md-field>
                     </login-card>
                   </div>
@@ -580,7 +560,7 @@ export default {
       console.log("##########")
       this.oktaTenantTwoUrl = environmentConfigToApply.contents.url
       this.oktaTenantTwoApiToken = environmentConfigToApply.contents.apiToken
-      var setConfig = await this.$http.post("http://localhost:8000/migrationConfig", environmentConfigToApply)
+      var setConfig = await this.$http.post("http://localhost:8000/migrationConfig", {name: this.tenantTwoConfig})
       console.log(setConfig)
     },
     async checkIfAuthServer(key, item) {
@@ -589,9 +569,9 @@ export default {
         if (item["_links"]["claims"]) {
           var href = item["_links"]["claims"]["href"];
           await component.$http
-            .get("http://localhost:8000/policy" + "?href=" + href, {
+            .get("http://localhost:8000/policy" + "?href=" + href + "&name=" + tenantOneConfig, {
               params: {
-                url: component.url
+                name: component.tenantOneConfig
               }
             })
             .then(function(response) {
@@ -609,9 +589,9 @@ export default {
         if (item["_links"]["scopes"]) {
           var href = item["_links"]["scopes"]["href"];
           await component.$http
-            .get("http://localhost:8000/policy" + "?href=" + href, {
+            .get("http://localhost:8000/policy" + "?href=" + href + "&name=" + tenantOneConfig, {
               params: {
-                url: component.url
+                name: component.tenantOneConfig
               }
             })
             .then(function(response) {
@@ -634,9 +614,8 @@ export default {
         if (item["_links"]["policies"]) {
           var href = item["_links"]["policies"]["href"];
           component.$http
-            .get("http://localhost:8000/policy", {
-              url: component.url,
-              apiToken: component.apiToken
+            .get("http://localhost:8000/policy" + "?href=" + href + "&name=" + tenantOneConfig, {
+             name: component.tenantOneConfig
             })
             .then(function(response) {
               console.log(response);
@@ -655,9 +634,9 @@ export default {
         } else if (item["_links"]["rules"]) {
           var href = item["_links"]["rules"]["href"];
           component.$http
-            .get("http://localhost:8000/policy" + "?href=" + href, {
+            .get("http://localhost:8000/policy" + "?href=" + href + "&name=" + tenantOneConfig, {
               params: {
-                url: component.url
+                name: component.tenantOneConfig
               }
             })
             .then(function(response) {
@@ -686,9 +665,9 @@ export default {
     async getPolicies(type, policyResource, href) {
       var component = this;
       component.$http
-        .get("http://localhost:8000/policy" + "?href=" + href, {
+        .get("http://localhost:8000/policy" + "?href=" + href + "&name=" + tenantOneConfig, {
           params: {
-            url: component.url
+            name: component.tenantOneConfig
           }
         })
         .then(function(response) {
@@ -712,8 +691,7 @@ export default {
     async getRules(type, ruleResource, href) {
       component.$http
         .post("http://localhost:8000/policy", {
-          url: component.url,
-          apiToken: component.apiToken
+         name: component.tenantOneConfig
         })
         .then(function(response) {});
     },
@@ -731,8 +709,7 @@ export default {
       resources.forEach(function(rez) {
         component.$http
           .post("http://localhost:8000/resource", {
-            url: component.url,
-            apiToken: component.apiToken,
+            name: component.tenantOneConfig,
             resource: rez
           })
           .then(function(response) {

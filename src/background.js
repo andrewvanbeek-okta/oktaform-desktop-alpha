@@ -23,6 +23,8 @@ var getAppDataPath = function () {
   }
 }
 
+
+
 const init = async () => {
   var supportpath = ""
   var supportdirpath = ""
@@ -52,6 +54,16 @@ const init = async () => {
     console.log("\nGracefully shutting down from SIGINT (Ctrl-C)");
     process.exit(1);
   });
+
+  var getFileContents = async function(filename){
+    var contents = await fs.readFileSync(supportpath + filename).toString()
+    return contents
+  }
+
+  var getEnvironment = async function(name) {
+    var contents = await getFileContents(name)
+    return JSON.parse(contents)
+  }
 
 
   app.use(bodyParser.json());
@@ -458,11 +470,12 @@ const init = async () => {
     });
   });
 
-  app.get("/policy", function (req, res) {
+  app.get("/policy", async function (req, res) {
     var request = require("request");
     console.log("GETS HERE")
+    var oktaConfig = await getEnvironment(req.query.name)
     var href = req.query.href
-    var token = req.query.apiToken || process.env.OKTA_API_TOKEN
+    var token = oktaConfig.apiToken
     var options = {
       method: "GET",
       url: href,
@@ -479,10 +492,11 @@ const init = async () => {
     });
   });
 
-  app.post("/policy", function (req, res) {
+  app.post("/policy", async function (req, res) {
     var request = require("request");
-    var href = req.body.href;
-    var token = req.body.apiToken
+    var oktaConfig = await getEnvironment(req.body.name)
+    var href = req.query.href
+    var token = oktaConfig.apiToken
     var options = {
       method: "GET",
       url: href,
@@ -519,11 +533,12 @@ const init = async () => {
     });
   });
 
-  app.post("/resource", function (req, res) {
+  app.post("/resource", async function (req, res) {
     var request = require("request");
+    var oktaConfig = await getEnvironment(req.body.name)
+    var url = oktaConfig.url
+    var token = oktaConfig.apiToken
     var object = req.body.resource
-    var url = oktaurl || req.body.url
-    var token = oktatoken || req.body.apiToken
     var options = {
       method: "GET",
       url: url + "/api/v1/" + object,
@@ -631,20 +646,7 @@ const init = async () => {
         // array empty or does not exist
         res.send({ error: "no files found", currentpath: directory_path })
       } else {
-        var filestosend = []
-        console.log(targetFiles)
-        targetFiles.forEach(async function (file, index, array) {
-          if (path.extname(file).toLowerCase() === EXTENSION && path.basename(file).includes("oktaform_env_")) {
-            var contents = await fs.readFileSync(supportpath + file).toString()
-            console.log(contents.toString())
-            filestosend.push({ name: file, contents: JSON.parse(contents) })
-            console.log(filestosend)
-            if (index === (array.length - 1)) {
-              console.log(filestosend)
-              res.send({ "files": filestosend })
-            }
-          }
-        })
+        res.send({files: targetFiles})
       }
     })
   })
@@ -654,9 +656,15 @@ const init = async () => {
 
   })
 
-  app.post("/migrationConfig", function(req, res){
-    console.log(req.body)
-    var config = req.body.contents
+  app.get("/implicit/callback", function (req, res) {
+    console.log(req.query)
+    res.redirect("oktaform://abc=1")
+  })
+
+  app.post("/migrationConfig", async function(req, res){
+    var config = await getFileContents(req.body.name)
+    console.log(config)
+    config = JSON.parse(config)
     var orgname = config.url.split("https://")[1].split(".")[0]
     var orgtype = config.url.split("https://")[1].split(".")[1] + "." + config.url.split("https://")[1].split(".")[2]
     var tfFile = 
@@ -771,10 +779,24 @@ app.on('ready', async () => {
     // } catch (e) {
     //   console.error('Vue Devtools failed to install:', e.toString())
     // }
+    protocol.registerFileProtocol('oktaform', (request, callback) => {
+      console.log("was hit!!!")
+      console.log(request)
+      //parse authorization code from request 
+
+  }, (error) => {
+    if (error) console.error('Failed to register protocol')
+  })
 
   }
   createWindow()
 })
+
+app.on('open-url', function (event, data) {
+  event.preventDefault();
+});
+
+app.setAsDefaultProtocolClient('oktaform');
 
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {
