@@ -56,12 +56,17 @@ const init = async () => {
   });
 
   var getFileContents = async function(filename){
+    console.log(supportpath + filename)
+    console.log("########################in file contents")
     var contents = await fs.readFileSync(supportpath + filename).toString()
+    console.log("########################in file contents")
     return contents
   }
 
   var getEnvironment = async function(name) {
+    console.log("########################")
     var contents = await getFileContents(name)
+    console.log("########################")
     return JSON.parse(contents)
   }
 
@@ -512,11 +517,12 @@ const init = async () => {
     });
   });
 
-  app.get("/resource", function (req, res) {
+  app.get("/resource", async function (req, res) {
     var request = require("request");
     var object = req.query.resource;
-    var url = req.query.url || process.env.OKTA_URL
-    var token = req.query.apiToken || process.env.OKTA_API_TOKEN;
+    var oktaConfig = await getEnvironment(req.query.name)
+    var url = oktaConfig.url
+    var token = oktaConfig.apiToken
     var options = {
       method: "GET",
       url: req.query.url + "/api/v1/" + object,
@@ -535,6 +541,7 @@ const init = async () => {
 
   app.post("/resource", async function (req, res) {
     var request = require("request");
+    console.log(req.body.name)
     var oktaConfig = await getEnvironment(req.body.name)
     var url = oktaConfig.url
     var token = oktaConfig.apiToken
@@ -552,7 +559,6 @@ const init = async () => {
     request(options, function (error, response, body) {
       if (error) throw new Error(error);
       var oauthApplications = []
-      console.log
       if (req.body.resource == "apps") {
         var arrayBody = JSON.parse(body)
         arrayBody.forEach(function (app) {
@@ -646,6 +652,11 @@ const init = async () => {
         // array empty or does not exist
         res.send({ error: "no files found", currentpath: directory_path })
       } else {
+        targetFiles = targetFiles.map(function(file){
+          var timestamp = fs.statSync(file).mtime.getTime()
+          const date = new Date(timestamp);
+          return {name: file, timestamp: date}
+        })
         res.send({files: targetFiles})
       }
     })

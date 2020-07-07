@@ -117,7 +117,7 @@
                       <md-field class="md-form-group" slot="inputs">
                         <label for="Config">Config</label>
                         <md-select v-model="tenantOneConfig" @md-selected="applyEnvironmentOne()" name="Config" id="Config">
-                          <md-option v-for="env in environments" :value="env">{{env}}</md-option>
+                          <md-option v-for="env in environments" :value="env.name">{{env.name}}</md-option>
                         </md-select>
                       </md-field>
                     </login-card>
@@ -132,7 +132,7 @@
                             <md-field class="md-form-group" slot="inputs">
                         <label for="Config">Config</label>
                         <md-select v-model="tenantTwoConfig" @md-selected="applyEnvironmentTwo()" name="Config" id="Config">
-                         <md-option v-for="env in environments" :value="env">{{env}}</md-option>
+                         <md-option v-for="env in environments" :value="env">{{env.name}}</md-option>
                         </md-select>
                       </md-field>
                     </login-card>
@@ -235,7 +235,6 @@
             </md-table-toolbar>
             <md-table-row slot-scope="{ item }" slot="md-table-row">
               <md-table-cell md-label="Name">{{ item.name }}</md-table-cell>
-              <md-table-cell md-label="Last Modified" md-sort-by="name">{{ item.timestamp }}</md-table-cell>
               <md-table-cell md-label="delete file and models associated" md-sort-by="name">
                 <md-button
                   v-on:click="deleteFileAndApply(item.fullfilepath)"
@@ -426,9 +425,9 @@ export default {
     },
     async showDelete() {
       var component = this;
-      var files = await component.$http.get(`http://localhost:8000/files`);
-      console.log(files);
-      component.files = files.data.files;
+      component.files = component.environments.map(function(file){
+        return {name: file.name.split(".json")[0], timestamp: file.timestamp}
+      })
       this.$modal.show("delete");
     },
     hide() {
