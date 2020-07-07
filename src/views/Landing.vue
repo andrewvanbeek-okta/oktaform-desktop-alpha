@@ -297,7 +297,7 @@
                   <md-icon>web</md-icon>
                   <label>Okta Url</label>
                   <md-input v-on:change="checkIfUrl()" v-model="environmentUrl"></md-input>
-                  <span v-if="badUrl || emptyField" class="md-danger" style="color: red;">Not a proper Okta Url</span>
+                  <span v-if="badUrl" class="md-danger" style="color: red;">Not a proper Okta Url</span>
                   <span v-if="emptyUrlField" class="md-danger" style="color: red;">Cannot be empty</span>
                 </md-field>
                 <md-field class="md-form-group" slot="inputs">
@@ -465,11 +465,10 @@ export default {
       var allItems = component.policies.concat(component.rules);
       component.$http
         .post(`http://localhost:8000/writeAll`, {
-          body: {
             resources: component.resources,
             items: allItems,
-            filename: component.filename
-          }
+            filename: component.filename,
+            foldername: component.tenantTwoConfig.split(".json")[0]
         })
         .then(response => {
           console.log(response.data);

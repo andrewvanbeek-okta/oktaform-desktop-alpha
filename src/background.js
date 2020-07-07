@@ -405,11 +405,12 @@ const init = async () => {
 
   app.post("/writeAll", function (req, res) {
     var autogenerate = true
-    console.log(req.body.body)
-    var filename = req.body.body.filename
+    console.log(req.body)
+    var filename = req.body.filename
     var itemsToWrite = [];
-    var resources = req.body.body.resources;
-    var childrenItems = req.body.body.items;
+    var resources = req.body.resources;
+    var foldername = req.body.foldername
+    var childrenItems = req.body.items;
     for (var key in resources) {
       var currentModels = resources[key];
       currentModels.forEach(function (oktaJson) {
@@ -431,23 +432,26 @@ const init = async () => {
       itemsToWrite.push(finalForm);
     });
     itemsToWrite.forEach(async function (item, index, array) {
-      await fs.appendFile(supportpath + filename + ".tf", item, function (err) {
-        if (err) throw err;
+      fs.appendFile(supportpath + foldername + "/" + filename + ".tf", item, function (err) {
+        if (err)
+          throw err;
         if (index === (array.length - 1)) {
           // This is the last one.
           if (autogenerate) {
             var util = require('util'),
-              exec = require('child_process').exec,
-              child,
-              child = exec("terraform apply -lock=false -auto-approve",
-                function (error, stdout, stderr) {
-                  console.log('stdout: ' + stdout);
-                  console.log('stderr: ' + stderr);
-                  res.download(supportpath + "oktaform.tf")
-                });
-
-          } else {
-            res.download(supportpath + "oktaform.tf")
+            exec = require('child_process').exec;
+            exec('terraform init && terraform apply -lock=false -auto-approve', {
+              cwd: supportpath + foldername
+            }, function (error, stdout, stderr) {
+              // work with result
+              console.log(error);
+              console.log(stdout);
+              console.log(stderr);
+            });
+            res.download(supportpath + foldername + "/" + filename + ".tf");
+          }
+          else {
+            res.download(supportpath + "oktaform.tf");
           }
         }
       });
@@ -582,6 +586,8 @@ const init = async () => {
       })
     })
   })
+
+  app.get("/folders")
 
   app.get("/apply", function (req, res) {
     console.log("gets to apply")
