@@ -132,7 +132,7 @@
                             <md-field class="md-form-group" slot="inputs">
                         <label for="Config">Config</label>
                         <md-select v-model="tenantTwoConfig" @md-selected="applyEnvironmentTwo()" name="Config" id="Config">
-                         <md-option v-for="env in environments" :value="env">{{env.name.split("oktaform_env_")[1]}}</md-option>
+                         <md-option v-for="env in environments" :value="env.name">{{env.name.split("oktaform_env_")[1]}}</md-option>
                         </md-select>
                       </md-field>
                     </login-card>
@@ -255,7 +255,7 @@
               <md-table-cell md-label="Name">{{ item.name }}</md-table-cell>
               <md-table-cell md-label="Delete File and destroy resources in tenant " md-sort-by="name">
                 <md-button
-                  v-on:click="deleteFileAndApply(item.name)"
+                  v-on:click="deleteFileAndApply(item)"
                   class="md-icon-button"
                 >
                   <md-icon>delete</md-icon>
@@ -494,9 +494,9 @@ export default {
       var component = this;
       component.spinning(true);
       component.$http
-        .delete("http://localhost:8000/removeFile?filename=" + file)
+        .delete("http://localhost:8000/removeFile?filename=" + file.name + "&path=" + file.folder)
         .then(response => {
-          component.$http.get("http://localhost:8000/apply").then(response => {
+          component.$http.get("http://localhost:8000/apply?path=" + file.folder).then(response => {
             component.showResponse(response.data.message);
             component.spinning(false);
           });

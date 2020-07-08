@@ -585,9 +585,11 @@ const init = async () => {
 
   app.delete("/removeFile", function (req, res) {
     var filename = req.query.filename
+    var folder = req.query.path + "/"
     console.log(filename)
     console.log(filename)
-    fs.unlink(supportpath + filename, (error) => {
+    console.log(supportpath + folder + filename)
+    fs.unlink(supportpath + folder + filename, (error) => {
       if (!error) {
         res.send({ "message": "deleted" })
         console.log("deleted")
@@ -621,7 +623,7 @@ const init = async () => {
           console.log(directory_path + "/" + file)
           var timestamp = fs.statSync(directory_path + "/" + file).mtime.getTime()
           const date = new Date(timestamp);
-          return { name: file, timestamp: date }
+          return { name: file, timestamp: date, folder: name}
         })
         res.send({ files: targetFiles })
       }
@@ -630,8 +632,9 @@ const init = async () => {
 
 
   app.get("/apply", function (req, res) {
-    var foldername = req.body.foldername
+    var foldername = req.query.path
     console.log("gets to apply")
+    console.log(supportpath + foldername)
     var util = require('util'),
       exec = require('child_process').exec;
     exec('terraform init && terraform apply -lock=false -auto-approve', {
