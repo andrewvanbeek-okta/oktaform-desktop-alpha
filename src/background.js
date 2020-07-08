@@ -431,7 +431,7 @@ const init = async () => {
 
   app.post("/writeAll", function (req, res) {
     var autogenerate = true
-    console.log(req.body)
+    //console.log(req.body)
     var filename = req.body.filename
     var itemsToWrite = [];
     var resources = req.body.resources;
@@ -444,6 +444,7 @@ const init = async () => {
         if (key.includes("?type=")) {
           itemKey = key.split("?type=")[1];
         }
+        console.log(oktaJson)
         var fullModel = new ModelCreator({ type: itemKey, resource: oktaJson });
         var finalForm = fullModel.model.finalForm;
         itemsToWrite.push(finalForm);

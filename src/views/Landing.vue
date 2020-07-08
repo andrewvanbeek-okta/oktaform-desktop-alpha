@@ -751,28 +751,29 @@ export default {
           });
       });
     },
-    onSelect(items) {
+    async onSelect(items) {
       var component = this;
-
-   console.log(items)
+      console.log(component.selected)
+      console.log("####")
+      console.log(items)
       var component = this;
       var mostRecentItem = items[items.length - 1]
-      console.log(mostRecentItem)
       var links = Object.keys(mostRecentItem._links).filter(function(link){
         return link.toString() == "claims" || link.toString() == "scopes" || link.toString() == "rules" || link.toString() == "policies"
       }).map(function (filteredlink) {
         return mostRecentItem._links[filteredlink].href
       })
-      console.log(links)
-      var children = []
-      links.forEach(async function(link){
-        var child = await component.getChildrenModels(link)
-        console.log(child)
-        children.push(child)
-      })
-      console.log(children)
-      // component.selected = items;
+      var children = await component.getChildrenCollection(links)
+      items[items.length - 1]["children"] = await children
       component.selected = items;
+    },
+    async getChildrenCollection(links) {
+      var component = this
+      links = Promise.all(links.map(async function(link){
+        var child = await component.getChildrenModels(link)
+        return child
+      }))
+      return links
     },
     async getChildrenModels(href){
       var component = this
