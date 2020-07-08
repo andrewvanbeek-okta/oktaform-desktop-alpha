@@ -55,7 +55,7 @@ const init = async () => {
     process.exit(1);
   });
 
-  var getFileContents = async function(filename){
+  var getFileContents = async function (filename) {
     console.log(supportpath + filename)
     console.log("########################in file contents")
     var contents = await fs.readFileSync(supportpath + filename).toString()
@@ -63,11 +63,20 @@ const init = async () => {
     return contents
   }
 
-  var getEnvironment = async function(name) {
+  var getEnvironment = async function (name) {
     console.log("########################")
     var contents = await getFileContents(name)
     console.log("########################")
     return JSON.parse(contents)
+  }
+
+  var getFolderContents = async function (filename) {
+    const dirpath = path.join(__dirname, '..')
+    var EXTENSION = '.json';
+    var directory_path = supportdirpath
+    if (isDevelopment) {
+      directory_path = dirpath
+    }
   }
 
 
@@ -456,7 +465,7 @@ const init = async () => {
           // This is the last one.
           if (autogenerate) {
             var util = require('util'),
-            exec = require('child_process').exec;
+              exec = require('child_process').exec;
             exec('terraform init && terraform apply -lock=false -auto-approve', {
               cwd: supportpath + foldername
             }, function (error, stdout, stderr) {
@@ -576,6 +585,8 @@ const init = async () => {
 
   app.delete("/removeFile", function (req, res) {
     var filename = req.query.filename
+    console.log(filename)
+    console.log(filename)
     fs.unlink(supportpath + filename, (error) => {
       if (!error) {
         res.send({ "message": "deleted" })
@@ -586,41 +597,51 @@ const init = async () => {
     })
   })
 
-  app.get("/files", function (req, res) {
-    const dirpath = path.join(__dirname, '..')
+  app.get("/files", async function (req, res) {
+    const dirpath = path.join(__dirname, "..")
     var EXTENSION = '.tf';
-    var directory_path = supportdirpath
+    var name = req.query.name
+    console.log(name)
+    var directory_path = supportdirpath + "/" + name
+    console.log(directory_path)
     if (isDevelopment) {
-      directory_path = dirpath
+      directory_path = dirpath + "/" + name
     }
+    console.log(directory_path)
     fs.readdir(directory_path, function (err, files) {
       var filestosend = []
-      var targetFiles = files.filter(function (file) {
-        return path.extname(file).toLowerCase() === EXTENSION && path.basename(file) !== "init.tf"
-      });
-      console.log(targetFiles)
-      targetFiles.forEach(function(file){
-          var timestamp = fs.statSync(file).mtime.getTime()
+      if (files === undefined || files.length == 0) {
+        // array empty or does not exist
+        res.send({ error: "no files found", currentpath: directory_path })
+      } else {
+        var targetFiles = files.filter(function (file) {
+          return path.extname(file).toLowerCase() === EXTENSION && path.basename(file) !== "init.tf"
+        });
+        targetFiles = targetFiles.map(function (file) {
+          console.log(directory_path + "/" + file)
+          var timestamp = fs.statSync(directory_path + "/" + file).mtime.getTime()
           const date = new Date(timestamp);
-          filestosend.push({ "name": path.basename(file), "timestamp": date, fullfilepath: file })
-          res.send({ "files": filestosend })
-      })
+          return { name: file, timestamp: date }
+        })
+        res.send({ files: targetFiles })
+      }
     })
   })
 
-  app.get("/folders")
 
   app.get("/apply", function (req, res) {
+    var foldername = req.body.foldername
     console.log("gets to apply")
     var util = require('util'),
-      exec = require('child_process').exec,
-      child,
-      child = exec("terraform apply -lock=false -auto-approve",
-        function (error, stdout, stderr) {
-          console.log('stdout: ' + stdout);
-          res.send({ "message": stdout })
-          console.log('stderr: ' + stderr);
-        });
+      exec = require('child_process').exec;
+    exec('terraform init && terraform apply -lock=false -auto-approve', {
+      cwd: supportpath + foldername
+    }, function (error, stdout, stderr) {
+      // work with result
+      console.log(error);
+      console.log(stdout);
+      console.log(stderr);
+    });
   })
 
   app.post("/environment", async function (req, res) {
@@ -652,12 +673,12 @@ const init = async () => {
         // array empty or does not exist
         res.send({ error: "no files found", currentpath: directory_path })
       } else {
-        targetFiles = targetFiles.map(function(file){
+        targetFiles = targetFiles.map(function (file) {
           var timestamp = fs.statSync(file).mtime.getTime()
           const date = new Date(timestamp);
-          return {name: file, timestamp: date}
+          return { name: file, timestamp: date }
         })
-        res.send({files: targetFiles})
+        res.send({ files: targetFiles })
       }
     })
   })
@@ -672,34 +693,34 @@ const init = async () => {
     res.redirect("oktaform://abc=1")
   })
 
-  app.post("/migrationConfig", async function(req, res){
+  app.post("/migrationConfig", async function (req, res) {
     var config = await getFileContents(req.body.name)
     console.log(config)
     config = JSON.parse(config)
     var orgname = config.url.split("https://")[1].split(".")[0]
     var orgtype = config.url.split("https://")[1].split(".")[1] + "." + config.url.split("https://")[1].split(".")[2]
-    var tfFile = 
-    `provider "okta" {
+    var tfFile =
+      `provider "okta" {
       org_name  = "${orgname}" 
       api_token = "${config.apiToken}"
       base_url  = "${orgtype}"
     }`
     var configDir = req.body.name.split(".json")[0]
     var dir = ""
-    if(isDevelopment) {
+    if (isDevelopment) {
       dir = './' + configDir
     } else {
       dir = './' + supportpath + configDir
     }
- 
 
-    if (!fs.existsSync(dir)){
-        fs.mkdirSync(dir);
-        fs.writeFileSync(supportpath + configDir + "/" + "init.tf", tfFile)
-        res.send({message: "file was overwritten"}) 
+
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir);
+      fs.writeFileSync(supportpath + configDir + "/" + "init.tf", tfFile)
+      res.send({ message: "file was overwritten" })
     } else {
       fs.writeFileSync(supportpath + configDir + "/" + "init.tf", tfFile);
-      res.send({message: "file was overwritten"}) 
+      res.send({ message: "file was overwritten" })
     }
   })
 
@@ -795,9 +816,9 @@ app.on('ready', async () => {
       console.log(request)
       //parse authorization code from request 
 
-  }, (error) => {
-    if (error) console.error('Failed to register protocol')
-  })
+    }, (error) => {
+      if (error) console.error('Failed to register protocol')
+    })
 
   }
   createWindow()

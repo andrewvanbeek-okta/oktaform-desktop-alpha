@@ -220,6 +220,24 @@
       </modal>
       <modal name="delete" :adaptive="true" :scrollable="true" width="80%" height="auto">
         <div v-if="renderComponent" class="full-table">
+          <h1>Your Different Environments</h1>
+          <md-table v-model="folders" md-sort="timestamp" md-sort-order="asc" md-card>
+            <md-table-row slot-scope="{ item }" slot="md-table-row">
+              <md-table-cell md-label="Name">{{ item.name }}</md-table-cell>
+              <md-table-cell md-label="View Folder Contents" md-sort-by="name">
+                <md-button
+                  v-on:click="showFiles(item.name)"
+                  class="md-icon-button"
+                >
+                  <md-icon>folder</md-icon>
+                </md-button>
+              </md-table-cell>
+            </md-table-row>
+          </md-table>
+        </div>
+      </modal>
+         <modal name="folder_files" :adaptive="true" :scrollable="true" width="80%" height="auto">
+        <div v-if="renderComponent" class="full-table">
           <h1>Delete Models and Files</h1>
           <md-table v-model="files" md-sort="timestamp" md-sort-order="asc" md-card>
             <md-table-toolbar>
@@ -235,9 +253,9 @@
             </md-table-toolbar>
             <md-table-row slot-scope="{ item }" slot="md-table-row">
               <md-table-cell md-label="Name">{{ item.name }}</md-table-cell>
-              <md-table-cell md-label="delete file and models associated" md-sort-by="name">
+              <md-table-cell md-label="Delete File and destroy resources in tenant " md-sort-by="name">
                 <md-button
-                  v-on:click="deleteFileAndApply(item.fullfilepath)"
+                  v-on:click="deleteFileAndApply(item.name)"
                   class="md-icon-button"
                 >
                   <md-icon>delete</md-icon>
@@ -344,6 +362,7 @@ export default {
       resources: {},
       policies: [],
       badUrl: false,
+      folders: [],
       tenantOneConfig: "",
       tenantTwoConfig: "",
       emptyTokenField: "",
@@ -425,10 +444,18 @@ export default {
     },
     async showDelete() {
       var component = this;
-      component.files = component.environments.map(function(file){
+      component.folders = component.environments.map(function(file){
         return {name: file.name.split(".json")[0], timestamp: file.timestamp}
       })
       this.$modal.show("delete");
+    },
+     async showFiles(item) {
+       var component = this
+       var name = item
+       console.log(name)
+       var getFiles = await component.$http.get("http://localhost:8000/files?name=" + name)
+      this.files = getFiles.data.files
+      this.$modal.show("folder_files");
     },
     hide() {
       this.$modal.hide("hello-world");
