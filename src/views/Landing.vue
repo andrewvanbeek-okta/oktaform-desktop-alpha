@@ -691,7 +691,7 @@ export default {
     async getPolicies(type, policyResource, href) {
       var component = this;
       component.$http
-        .get("http://localhost:8000/policy" + "?href=" + href + "&name=" + tenantOneConfig, {
+        .get("http://localhost:8000/policy" + "?href=" + href + "&name=" + component.tenantOneConfig, {
           params: {
             name: component.tenantOneConfig
           }
@@ -753,7 +753,32 @@ export default {
     },
     onSelect(items) {
       var component = this;
+
+   console.log(items)
+      var component = this;
+      var mostRecentItem = items[items.length - 1]
+      console.log(mostRecentItem)
+      var links = Object.keys(mostRecentItem._links).filter(function(link){
+        return link.toString() == "claims" || link.toString() == "scopes" || link.toString() == "rules" || link.toString() == "policies"
+      }).map(function (filteredlink) {
+        return mostRecentItem._links[filteredlink].href
+      })
+      console.log(links)
+      var children = []
+      links.forEach(async function(link){
+        var child = await component.getChildrenModels(link)
+        console.log(child)
+        children.push(child)
+      })
+      console.log(children)
+      // component.selected = items;
       component.selected = items;
+    },
+    async getChildrenModels(href){
+      var component = this
+      var getChild = await component.$http.get("http://localhost:8000/children?href=" + href + "&name=" + component.tenantOneConfig)
+      console.log(getChild.data)
+      return getChild.data.children
     },
     getAlternateLabel(count) {
       let plural = "";

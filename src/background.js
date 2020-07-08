@@ -599,6 +599,29 @@ const init = async () => {
     })
   })
 
+  app.get("/children", async function(req, res){
+    var request = require("request");
+    var oktaConfig = await getEnvironment(req.query.name)
+    var href = req.query.href
+    var token = oktaConfig.apiToken
+    console.log(href)
+    var options = {
+      method: "GET",
+      url: href,
+      headers: {
+        "Cache-Control": "no-cache",
+        Authorization: "SSWS " + token,
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      },
+      json: true
+    };
+    request(options, function (error, response, body) {
+      console.log(body)
+      res.send({"children": body});
+    });
+  })
+
   app.get("/files", async function (req, res) {
     const dirpath = path.join(__dirname, "..")
     var EXTENSION = '.tf';
