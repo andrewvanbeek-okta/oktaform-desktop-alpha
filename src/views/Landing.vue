@@ -730,7 +730,8 @@ export default {
         "apps",
         "policies?type=OKTA_SIGN_ON",
         "idps?type=SAML2",
-        "idps?type=OIDC"
+        "idps?type=OIDC",
+        "trustedOrigins"
       ];
       resources.forEach(function(rez) {
         component.$http
@@ -771,7 +772,8 @@ export default {
       var component = this
       links = Promise.all(links.map(async function(link){
         var child = await component.getChildrenModels(link)
-        return child
+        var type = child[0].type || link.split("/")[link.split("/").length - 1]
+        return {type: type, childObjects: child}
       }))
       return links
     },
@@ -779,7 +781,10 @@ export default {
       var component = this
       var getChild = await component.$http.get("http://localhost:8000/children?href=" + href + "&name=" + component.tenantOneConfig)
       console.log(getChild.data)
-      return getChild.data.children
+      var children = getChild.data.children.filter(function(childResource){
+        return !childResource.system
+      })
+      return children
     },
     getAlternateLabel(count) {
       let plural = "";
@@ -867,3 +872,4 @@ div.md-card-header.md-danger {
   background-color: #c9446e;
 }
 </style>
+

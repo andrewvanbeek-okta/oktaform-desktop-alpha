@@ -114,6 +114,15 @@ const init = async () => {
     return body;
   };
 
+  var tfId = function (fullObject) {
+    var name = fullObject.name || fullObject.profile.name
+    name = name.replace(/[^a-zA-Z ]/g, "")
+    console.log(name)
+    console.log(fullObject)
+    var header = name.replace(/\s+/g, '') + fullObject.id
+    return header
+  }
+
   class OauthApp {
     constructor(app) {
       this.label = app.label;
@@ -123,6 +132,7 @@ const init = async () => {
       this.response_types = app.settings.oauthClient.response_types;
       this.token_endpoint_auth_method = "client_secret_basic";
       this.finalForm = tfGenerate(this, app, "okta_app_oauth", Object.keys(this));
+      this.terraformId = tfId(app)
     }
   }
 
@@ -145,6 +155,7 @@ const init = async () => {
       this.issuer_url = idp.protocol.issuer.url;
       this.username_template = "idpuser.email";
       this.finalForm = tfGenerate(this, idp, "okta_idp_oidc", Object.keys(this));
+      this.terraformId = tfId(idp)
     }
   }
 
@@ -158,7 +169,8 @@ const init = async () => {
         server,
         "okta_auth_server",
         Object.keys(this)
-      );
+      )
+      this.terraformId = tfId(server)
     }
   }
 
@@ -168,14 +180,15 @@ const init = async () => {
       this.name = policy.name;
       this.description = policy.description;
       this.priority = policy.priority;
-      this.client_whitelist = policy.conditions.clients.include;
-      this.auth_server_id = "${okta_auth_server." + policy.resourceName + ".id}";
+      this.client_whitelist = ["ALL_CLIENTS"]
+      this.auth_server_id = "${okta_auth_server." + policy.parentid + ".id}";
       this.finalForm = tfGenerate(
         this,
         policy,
         "okta_auth_server_policy",
         Object.keys(this)
-      );
+      )
+      this.terraformId = tfId(policy)
     }
   }
 
@@ -184,13 +197,14 @@ const init = async () => {
       this.consent = scope.consent;
       this.name = scope.name;
       this.description = scope.description;
-      this.auth_server_id = "${okta_auth_server." + scope.auth_server_id + ".id}";
+      this.auth_server_id = "${okta_auth_server." + scope.parentid + ".id}";
       this.finalForm = tfGenerate(
         this,
         scope,
         "okta_auth_server_scope",
         Object.keys(this)
-      );
+      )
+      this.terraformId = tfId(scope)
     }
   }
 
@@ -198,16 +212,17 @@ const init = async () => {
     constructor(claim) {
       this.status = claim.status;
       this.name = claim.name;
-      this.value_type = claim.claimType;
+      this.value_type = claim.valueType;
       this.value = claim.value;
-      this.claim_type = claim.valueType;
-      this.auth_server_id = "${okta_auth_server." + claim.auth_server_id + ".id}";
+      this.claim_type = claim.claimType;
+      this.auth_server_id = "${okta_auth_server." + claim.parentid + ".id}";
       this.finalForm = tfGenerate(
         this,
         claim,
         "okta_auth_server_claim",
         Object.keys(this)
-      );
+      )
+      this.terraformId = tfId(claim)
     }
   }
 
@@ -221,7 +236,8 @@ const init = async () => {
         policy,
         "okta_policy_signon",
         Object.keys(this)
-      );
+      )
+      this.terraformId = tfId(policy)
     }
   }
 
@@ -229,14 +245,15 @@ const init = async () => {
     constructor(rule) {
       this.status = rule.status;
       this.name = rule.name;
-      this.policyid = "${okta_policy_signon." + rule.resourceName + ".id}";
+      this.policyid = "${okta_policy_signon." + rule.parentid + ".id}";
       this.access = rule.actions.access
       this.finalForm = tfGenerate(
         this,
         rule,
         "okta_policy_rule_signon",
         Object.keys(this)
-      );
+      )
+      this.terraformId = tfId(rule)
     }
   }
 
@@ -249,13 +266,14 @@ const init = async () => {
       this.group_whitelist = ["${data.okta_group.all.id}"];
       this.grant_type_whitelist = rule.conditions.grantTypes.include;
       this.policy_id = "${okta_auth_server." + rule.resourceName + ".id}";
-      this.auth_server_id = "${okta_auth_server." + rule.auth_server_id + ".id}";
+      this.auth_server_id = "${okta_auth_server." + rule.parentid + ".id}";
       this.finalForm = tfGenerate(
         this,
         rule,
         "okta_auth_server_policy_rule",
         Object.keys(this)
-      );
+      )
+      this.terraformId = tfId(rule)
     }
   }
 
@@ -290,10 +308,10 @@ const init = async () => {
             case "OIDC":
               return new OidcIdp(this.modelJson);
               break;
-            case "claim":
+            case "claims":
               return new AuthClaim(this.modelJson);
               break;
-            case "scope":
+            case "scopes":
               return new AuthScope(this.modelJson);
           }
         }
@@ -444,20 +462,28 @@ const init = async () => {
         if (key.includes("?type=")) {
           itemKey = key.split("?type=")[1];
         }
-        console.log(oktaJson)
         var fullModel = new ModelCreator({ type: itemKey, resource: oktaJson });
         var finalForm = fullModel.model.finalForm;
         itemsToWrite.push(finalForm);
+        oktaJson.children.forEach(function(child){
+          var childType = child.type
+          console.log("HERE")
+          child.childObjects.forEach(function(child){
+            child.parentid = fullModel.model.terraformId
+            var childModel = new ModelCreator({ type: childType, resource: child })
+            itemsToWrite.push(childModel.model.finalForm)
+          })
+        })
       });
     }
-    childrenItems.forEach(function (oktaJson) {
-      var fullModel = new ModelCreator({
-        type: oktaJson.type,
-        resource: oktaJson
-      });
-      var finalForm = fullModel.model.finalForm;
-      itemsToWrite.push(finalForm);
-    });
+    // childrenItems.forEach(function (oktaJson) {
+    //   var fullModel = new ModelCreator({
+    //     type: oktaJson.type,
+    //     resource: oktaJson
+    //   });
+    //   var finalForm = fullModel.model.finalForm;
+    //   itemsToWrite.push(finalForm);
+    // });
     itemsToWrite.forEach(async function (item, index, array) {
       fs.appendFile(supportpath + foldername + "/" + filename + ".tf", item, function (err) {
         if (err)
