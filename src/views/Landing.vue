@@ -23,13 +23,9 @@
           <div class="container">
             <div class="md-layout">
               <div class="md-layout-item md-size-66 md-xsmall-size-100 mx-auto text-center">
-                <h2 class="title text-center">Let's talk product</h2>
+                <h2 class="title text-center">Let's talk Oktaform</h2>
                 <h5 class="description">
-                  This is the paragraph where you can write more details about
-                  your product. Keep you user engaged by providing meaningful
-                  information. Remember that by this time, the user is curious,
-                  otherwise he wouldn't scroll to get here. Add a button if you
-                  want the user to see more.
+             This tool helps manage and sync configurations from one Okta tenant to another, while also automatically generating terraform files for you.  Each okta tenant that use to sync here will gets own folder in you application support libary for this app, so you have automated orgainzation across multiple environments.  Additionally migrate complex config is now as easy as point and click.  We will not be able to get everything but we will be able to get 80% of it.
                 </h5>
               </div>
             </div>
@@ -37,11 +33,9 @@
               <div class="md-layout">
                 <div class="md-layout-item md-medium-size-33 md-small-size-100">
                   <img src="https://miro.medium.com/max/960/0*3i0MOCi2wHX607Jp.png" />
-                  <h4 class="info-title">Free Chat</h4>
+                  <h4 class="info-title">Terraform</h4>
                   <p>
-                    Divide details about your product or agency work into parts.
-                    Write a few lines about each one. A paragraph describing a
-                    feature will be enough.
+                  Ah yeah Infrastructure code, lets automate some config. Oktaform is going to allow you to automigrate your data from one okta tenant to another.  If you are new to okta check out https://www.terraform.io/docs/providers/okta/index.html.
                   </p>
                 </div>
               </div>
@@ -50,11 +44,9 @@
                   <img
                     src="https://www.okta.com/sites/all/themes/Okta/images/logos/developer/Thumbnail-folderDeveloper.png"
                   />
-                  <h4 class="info-title">Verified Users</h4>
+                  <h4 class="info-title">Okta</h4>
                   <p>
-                    Divide details about your product or agency work into parts.
-                    Write a few lines about each one. A paragraph describing a
-                    feature will be enough.
+                    The MVP OF IDPS, If you are trying to secure the perimeter that us ya know.  But if you are using this tool you like know that.  We will use oktaform to manage our many environments.  Learn more at https://developer.okta.com
                   </p>
                 </div>
               </div>
@@ -66,8 +58,8 @@
         <div class="container">
           <md-speed-dial md-direction="bottom" class="md-danger md-top-right md-just-icon md-round">
             <md-speed-dial-target class="md-danger md-just-icon md-round">
-              <md-icon class="md-morph-initial">add</md-icon>
-              <md-icon class="md-morph-final">edit</md-icon>
+              <md-icon class="md-morph-initial">menu</md-icon>
+              <md-icon class="md-morph-final">settings</md-icon>
             </md-speed-dial-target>
 
             <md-speed-dial-content>
@@ -772,10 +764,10 @@ export default {
       var component = this
       links = Promise.all(links.map(async function(link){
         var child = await component.getChildrenModels(link)
-        var type = child[0].type || link.split("/")[link.split("/").length - 1]
-        return {type: type, childObjects: child}
+        var type = child.type || link.split("/")[link.split("/").length - 1]
+        return {type: type, childObjects: child.children}
       }))
-      return links
+      return links || []
     },
     async getChildrenModels(href){
       var component = this
@@ -784,7 +776,7 @@ export default {
       var children = getChild.data.children.filter(function(childResource){
         return !childResource.system
       })
-      return children
+      return {type: getChild.data.type, children: children}
     },
     getAlternateLabel(count) {
       let plural = "";

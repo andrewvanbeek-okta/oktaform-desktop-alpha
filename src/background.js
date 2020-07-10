@@ -645,7 +645,11 @@ const init = async () => {
     };
     request(options, function (error, response, body) {
       console.log(body)
-      res.send({"children": body});
+      var type = "none"
+      if(body[0]) {
+        type = body[0].type
+      }
+      res.send({"children": body, "type": type});
     });
   })
 
