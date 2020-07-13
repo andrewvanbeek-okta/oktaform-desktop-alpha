@@ -131,6 +131,7 @@ const init = async () => {
       this.redirect_uris = app.settings.oauthClient.redirect_uris;
       this.response_types = app.settings.oauthClient.response_types;
       this.token_endpoint_auth_method = "client_secret_basic";
+      this.consent_method = "TRUSTED"
       this.finalForm = tfGenerate(this, app, "okta_app_oauth", Object.keys(this));
       this.terraformId = tfId(app)
     }
@@ -246,7 +247,7 @@ const init = async () => {
       this.status = rule.status;
       this.name = rule.name;
       this.policyid = "${okta_policy_signon." + rule.parentid + ".id}";
-      this.access = rule.actions.access
+      this.access = rule.actions.access || rule.actions.signon.access
       this.finalForm = tfGenerate(
         this,
         rule,
@@ -751,6 +752,7 @@ const init = async () => {
   })
 
   app.post("/migrationConfig", async function (req, res) {
+    console.log("##########################################")
     var config = await getFileContents(req.body.name)
     console.log(config)
     config = JSON.parse(config)

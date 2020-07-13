@@ -1,5 +1,9 @@
-resource "okta_policy_signon" "IPFilter00psi1lcb7tkt5DzZ0h7" {
-status = "ACTIVE"
-name = "IP Filter"
-description = "static description"
+resource "okta_app_oauth" "oidcclient0oahk5h8usLt9thC40h7" {
+label = "Angular"
+type = "browser"
+grant_types = ["implicit"]
+redirect_uris = ["http://localhost:8080/implicit/callback"]
+response_types = ["id_token","token"]
+token_endpoint_auth_method = "client_secret_basic"
+consent_method = "TRUSTED"
 }

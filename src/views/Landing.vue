@@ -572,12 +572,6 @@ export default {
       this.apiToken = environmentConfigToApply.contents.apiToken
     },
     async applyEnvironmentTwo() {
-      var environmentConfigToApply = await this.findEnvironment(this.tenantTwoConfig)
-      console.log("##########")
-      console.log(environmentConfigToApply)
-      console.log("##########")
-      this.oktaTenantTwoUrl = environmentConfigToApply.contents.url
-      this.oktaTenantTwoApiToken = environmentConfigToApply.contents.apiToken
       var setConfig = await this.$http.post("http://localhost:8000/migrationConfig", {name: this.tenantTwoConfig})
       console.log(setConfig)
     },
