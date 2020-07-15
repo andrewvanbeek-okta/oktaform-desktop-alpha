@@ -262,17 +262,38 @@
         </div>
       </modal>
       <modal name="response" :adaptive="true" :scrollable="true" width="80%" height="30%">
-        <md-content class="md-primary allow-scroll">
+        <!-- <md-content class="md-primary allow-scroll">
           <nav-tabs-card class="md-danger" no-label>
             <template slot="content">
               <md-tabs md-sync-route class="md-danger" md-alignment="left">
-                <md-tab id="tab-home" md-label="Response" md-icon="message">
-                  <div v-model="serverResponse">{{serverResponse}}</div>
-                </md-tab>
+                <md-tab id="tab-home" md-label="Response" md-icon="message"> -->
+                  <!-- //<div v-model="serverResponse">{{serverResponse}}</div> -->
+                <!-- </md-tab>
               </md-tabs>
             </template>
           </nav-tabs-card>
-        </md-content>
+        </md-content> -->
+      </modal>
+      <v-dialog />
+      <modal name v-if="classicModal" @close="classicModalHide">
+        <template slot="header">
+          <h4 class="modal-title">Modal Title</h4>
+          <md-button
+            class="md-simple md-just-icon md-round modal-default-button"
+            @click="classicModalHide"
+          >
+            <md-icon>clear</md-icon>
+          </md-button>
+        </template>
+
+        <template slot="body">
+          <div v-model="serverResponse">{{serverResponse}}</div>
+        </template>
+
+        <template slot="footer">
+          <md-button class="md-simple">Nice Button</md-button>
+          <md-button class="md-danger md-simple" @click="classicModalHide">Close</md-button>
+        </template>
       </modal>
       <modal name="spinner" :adaptive="true" :scrollable="true" width="50%" height="auto">
         <center>
@@ -379,6 +400,8 @@ export default {
       environmentToken: "",
       environmentName: "",
       environments: [],
+      classicModal: true,
+      classicModalHide: false,
       rules: [],
       serverResponse: "",
       oktaTenantOneUrl: "",
@@ -512,14 +535,18 @@ export default {
           component.$http
             .get("http://localhost:8000/apply?path=" + file.folder)
             .then(response => {
-              component.showResponse(response.data.message);
+              component.showResponse(response.data);
               component.spinning(false);
             });
         });
     },
     showResponse(response) {
       this.serverResponse = response;
-      this.$modal.show("response");
+      //this.classicModal = true
+      this.$modal.show("dialog", {
+        title: "Response",
+        text: response.message.replace(/(\r\n|\n|\r)/gm, "").trim()
+      });
     },
     showCreateConfig() {
       this.$modal.show("create_config");

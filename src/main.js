@@ -24,9 +24,10 @@ import MaterialKit from "./plugins/material-kit";
 
 Vue.config.productionTip = false;
 Vue.prototype.$http = axios
+
 Vue.use(MaterialKit);
 Vue.use(VueMaterial)
-Vue.use(VModal)
+Vue.use(VModal, { dialog: true })
 const NavbarStore = {
   showNavbar: false
 };
