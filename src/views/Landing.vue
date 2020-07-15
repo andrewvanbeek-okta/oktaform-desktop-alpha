@@ -24,9 +24,9 @@
             <div class="md-layout">
               <div class="md-layout-item md-size-66 md-xsmall-size-100 mx-auto text-center">
                 <h2 class="title text-center">Let's talk Oktaform</h2>
-                <h5 class="description">
-             This tool helps manage and sync configurations from one Okta tenant to another, while also automatically generating terraform files for you.  Each okta tenant that use to sync here will gets own folder in you application support libary for this app, so you have automated orgainzation across multiple environments.  Additionally migrate complex config is now as easy as point and click.  We will not be able to get everything but we will be able to get 80% of it.
-                </h5>
+                <h5
+                  class="description"
+                >This tool helps manage and sync configurations from one Okta tenant to another, while also automatically generating terraform files for you. Each okta tenant that use to sync here will gets own folder in you application support libary for this app, so you have automated orgainzation across multiple environments. Additionally migrate complex config is now as easy as point and click. We will not be able to get everything but we will be able to get 80% of it.</h5>
               </div>
             </div>
             <div class="features text-center">
@@ -34,9 +34,7 @@
                 <div class="md-layout-item md-medium-size-33 md-small-size-100">
                   <img src="https://miro.medium.com/max/960/0*3i0MOCi2wHX607Jp.png" />
                   <h4 class="info-title">Terraform</h4>
-                  <p>
-                  Ah yeah Infrastructure code, lets automate some config. Oktaform is going to allow you to automigrate your data from one okta tenant to another.  If you are new to okta check out https://www.terraform.io/docs/providers/okta/index.html.
-                  </p>
+                  <p>Ah yeah Infrastructure code, lets automate some config. Oktaform is going to allow you to automigrate your data from one okta tenant to another. If you are new to okta check out https://www.terraform.io/docs/providers/okta/index.html.</p>
                 </div>
               </div>
               <div class="md-layout-item md-medium-size-33 md-small-size-100">
@@ -45,9 +43,7 @@
                     src="https://www.okta.com/sites/all/themes/Okta/images/logos/developer/Thumbnail-folderDeveloper.png"
                   />
                   <h4 class="info-title">Okta</h4>
-                  <p>
-                    The MVP OF IDPS, If you are trying to secure the perimeter that us ya know.  But if you are using this tool you like know that.  We will use oktaform to manage our many environments.  Learn more at https://developer.okta.com
-                  </p>
+                  <p>The MVP OF IDPS, If you are trying to secure the perimeter that us ya know. But if you are using this tool you like know that. We will use oktaform to manage our many environments. Learn more at https://developer.okta.com</p>
                 </div>
               </div>
             </div>
@@ -108,8 +104,11 @@
                       >Place the Okta url and api token you want to pull data from here</p>
                       <md-field class="md-form-group" slot="inputs">
                         <label for="Config">Config</label>
-                        <md-select v-model="tenantOneConfig" @md-selected="applyEnvironmentOne()" name="Config" id="Config">
-                          <md-option v-for="env in environments" :value="env.name">{{env.name.split("oktaform_env_")[1]}}</md-option>
+                        <md-select v-model="tenantOneConfig" name="Config" id="Config">
+                          <md-option
+                            v-for="env in environments"
+                            :value="env.name"
+                          >{{env.name.split("oktaform_env_")[1]}}</md-option>
                         </md-select>
                       </md-field>
                     </login-card>
@@ -121,10 +120,18 @@
                         slot="description"
                         class="description"
                       >Place the Okta url and api token you want to migrate data to here</p>
-                            <md-field class="md-form-group" slot="inputs">
+                      <md-field class="md-form-group" slot="inputs">
                         <label for="Config">Config</label>
-                        <md-select v-model="tenantTwoConfig" @md-selected="applyEnvironmentTwo()" name="Config" id="Config">
-                         <md-option v-for="env in environments" :value="env.name">{{env.name.split("oktaform_env_")[1]}}</md-option>
+                        <md-select
+                          v-model="tenantTwoConfig"
+                          @md-selected="applyEnvironmentTwo()"
+                          name="Config"
+                          id="Config"
+                        >
+                          <md-option
+                            v-for="env in environments"
+                            :value="env.name"
+                          >{{env.name.split("oktaform_env_")[1]}}</md-option>
                         </md-select>
                       </md-field>
                     </login-card>
@@ -217,10 +224,7 @@
             <md-table-row slot-scope="{ item }" slot="md-table-row">
               <md-table-cell md-label="Name">{{ item.name }}</md-table-cell>
               <md-table-cell md-label="View Folder Contents" md-sort-by="name">
-                <md-button
-                  v-on:click="showFiles(item.name)"
-                  class="md-icon-button"
-                >
+                <md-button v-on:click="showFiles(item.name)" class="md-icon-button">
                   <md-icon>folder</md-icon>
                 </md-button>
               </md-table-cell>
@@ -228,7 +232,7 @@
           </md-table>
         </div>
       </modal>
-         <modal name="folder_files" :adaptive="true" :scrollable="true" width="80%" height="auto">
+      <modal name="folder_files" :adaptive="true" :scrollable="true" width="80%" height="auto">
         <div v-if="renderComponent" class="full-table">
           <h1>Delete Models and Files</h1>
           <md-table v-model="files" md-sort="timestamp" md-sort-order="asc" md-card>
@@ -245,11 +249,11 @@
             </md-table-toolbar>
             <md-table-row slot-scope="{ item }" slot="md-table-row">
               <md-table-cell md-label="Name">{{ item.name }}</md-table-cell>
-              <md-table-cell md-label="Delete File and destroy resources in tenant " md-sort-by="name">
-                <md-button
-                  v-on:click="deleteFileAndApply(item)"
-                  class="md-icon-button"
-                >
+              <md-table-cell
+                md-label="Delete File and destroy resources in tenant "
+                md-sort-by="name"
+              >
+                <md-button v-on:click="deleteFileAndApply(item)" class="md-icon-button">
                   <md-icon>delete</md-icon>
                 </md-button>
               </md-table-cell>
@@ -257,8 +261,18 @@
           </md-table>
         </div>
       </modal>
-      <modal name="response" :adaptive="true" :scrollable="true" width="80%" height="auto">
-        <div v-model="serverResponse">{{serverResponse}}</div>
+      <modal name="response" :adaptive="true" :scrollable="true" width="80%" height="30%">
+        <md-content class="md-primary allow-scroll">
+          <nav-tabs-card class="md-danger" no-label>
+            <template slot="content">
+              <md-tabs md-sync-route class="md-danger" md-alignment="left">
+                <md-tab id="tab-home" md-label="Response" md-icon="message">
+                  <div v-model="serverResponse">{{serverResponse}}</div>
+                </md-tab>
+              </md-tabs>
+            </template>
+          </nav-tabs-card>
+        </md-content>
       </modal>
       <modal name="spinner" :adaptive="true" :scrollable="true" width="50%" height="auto">
         <center>
@@ -393,23 +407,26 @@ export default {
       }
     },
     checkIfUrl() {
-      this.checkIfEmpty()
-      if(this.environmentUrl.includes("okta") && this.environmentUrl.includes("https://")) {
-        this.badUrl = false
-        this.emptyUrlField = false
+      this.checkIfEmpty();
+      if (
+        this.environmentUrl.includes("okta") &&
+        this.environmentUrl.includes("https://")
+      ) {
+        this.badUrl = false;
+        this.emptyUrlField = false;
       } else {
-        this.badUrl = true
+        this.badUrl = true;
       }
     },
     checkIfEmpty() {
-      if(this.environmentName != "") {
-        this.emptyNameField = false
-      } 
-      if(this.environmentToken != "") {
-        this.emptyTokenField = false
+      if (this.environmentName != "") {
+        this.emptyNameField = false;
       }
-       if(this.environmentUrl != "") {
-        this.emptyUrlField= false
+      if (this.environmentToken != "") {
+        this.emptyTokenField = false;
+      }
+      if (this.environmentUrl != "") {
+        this.emptyUrlField = false;
       }
     },
     show() {
@@ -430,31 +447,33 @@ export default {
       console.log("JKNDKBFKDBK");
       this.$modal.show("configure");
     },
-    async resetPage(){
-      console.log(this.$router)
-      window.location.reload()
+    async resetPage() {
+      console.log(this.$router);
+      window.location.reload();
     },
     async showDelete() {
       var component = this;
-      component.folders = component.environments.map(function(file){
-        return {name: file.name.split(".json")[0], timestamp: file.timestamp}
-      })
+      component.folders = component.environments.map(function(file) {
+        return { name: file.name.split(".json")[0], timestamp: file.timestamp };
+      });
       this.$modal.show("delete");
     },
-     async showFiles(item) {
-       var component = this
-       var name = item
-       console.log(name)
-       var getFiles = await component.$http.get("http://localhost:8000/files?name=" + name)
-      this.files = getFiles.data.files
+    async showFiles(item) {
+      var component = this;
+      var name = item;
+      console.log(name);
+      var getFiles = await component.$http.get(
+        "http://localhost:8000/files?name=" + name
+      );
+      this.files = getFiles.data.files;
       this.$modal.show("folder_files");
     },
     hide() {
       this.$modal.hide("hello-world");
     },
-     changeItem(item) {
-       console.log("TESTSTS")
-      console.log(item)
+    changeItem(item) {
+      console.log("TESTSTS");
+      console.log(item);
     },
     sendSelected() {
       var component = this;
@@ -463,20 +482,17 @@ export default {
       var allItems = component.policies.concat(component.rules);
       component.$http
         .post(`http://localhost:8000/writeAll`, {
-            resources: component.resources,
-            items: allItems,
-            filename: component.filename,
-            foldername: component.tenantTwoConfig.split(".json")[0]
+          resources: component.resources,
+          items: allItems,
+          filename: component.filename,
+          foldername: component.tenantTwoConfig.split(".json")[0]
         })
         .then(response => {
           console.log(response.data);
           //let blob = new Blob([response.data], { type: 'application/tf' }),
           component.spinning(false);
           component.showResponse(response.data);
-          if(!autogenerate) {
-             FileDownload(response.data, component.filename + ".tf");
-          } 
-          component.resetPage()
+          //component.resetPage()
         })
         .catch(e => {
           console.log(e);
@@ -486,12 +502,19 @@ export default {
       var component = this;
       component.spinning(true);
       component.$http
-        .delete("http://localhost:8000/removeFile?filename=" + file.name + "&path=" + file.folder)
+        .delete(
+          "http://localhost:8000/removeFile?filename=" +
+            file.name +
+            "&path=" +
+            file.folder
+        )
         .then(response => {
-          component.$http.get("http://localhost:8000/apply?path=" + file.folder).then(response => {
-            component.showResponse(response.data.message);
-            component.spinning(false);
-          });
+          component.$http
+            .get("http://localhost:8000/apply?path=" + file.folder)
+            .then(response => {
+              component.showResponse(response.data.message);
+              component.spinning(false);
+            });
         });
     },
     showResponse(response) {
@@ -521,33 +544,36 @@ export default {
       }
     },
     async saveEnvironment() {
-     
       var component = this;
-       if(component.environmentUrl != "" && component.environmentName != "" && component.environmentToken != "" && !component.badUrl) {
-              var saveEnv = await component.$http.post(
-        "http://localhost:8000/environment",
-        {
-          url: component.environmentUrl,
-          apiToken: component.environmentToken,
-          name: component.environmentName
+      if (
+        component.environmentUrl != "" &&
+        component.environmentName != "" &&
+        component.environmentToken != "" &&
+        !component.badUrl
+      ) {
+        var saveEnv = await component.$http.post(
+          "http://localhost:8000/environment",
+          {
+            url: component.environmentUrl,
+            apiToken: component.environmentToken,
+            name: component.environmentName
+          }
+        );
+        console.log(saveEnv);
+        if (saveEnv.data.message === "saved!") {
+          component.getEnvironments();
         }
-      );
-      console.log(saveEnv)
-      if(saveEnv.data.message === "saved!") {
-        component.getEnvironments()
+      } else {
+        if (component.environmentUrl == "") {
+          component.emptyUrlField = true;
+        }
+        if (component.environmentToken == "") {
+          component.emptyTokenField = true;
+        }
+        if (component.environmentName == "") {
+          component.emptyNameField = true;
+        }
       }
-       } else {
-         if(component.environmentUrl == "") {
-           component.emptyUrlField = true
-         }
-        if(component.environmentToken == "") {
-           component.emptyTokenField = true
-         }
-        if(component.environmentName == "") {
-           component.emptyNameField = true
-         }    
-       }
- 
     },
     async getEnvironments() {
       var component = this;
@@ -555,25 +581,22 @@ export default {
         "http://localhost:8000/environments"
       );
       console.log(getEnvs);
-      component.environments = getEnvs.data.files
+      component.environments = getEnvs.data.files;
     },
     async findEnvironment(name) {
-      var environment = await this.environments.find(function(environment_config) {
-        return environment_config.name === name
-      }) 
-      return environment
-    },
-    async applyEnvironmentOne() {
-      var environmentConfigToApply = await this.findEnvironment(this.tenantOneConfig)
-      console.log("##########")
-      console.log(environmentConfigToApply)
-      console.log("##########")
-      this.url = environmentConfigToApply.contents.url
-      this.apiToken = environmentConfigToApply.contents.apiToken
+      var environment = await this.environments.find(function(
+        environment_config
+      ) {
+        return environment_config.name === name;
+      });
+      return environment;
     },
     async applyEnvironmentTwo() {
-      var setConfig = await this.$http.post("http://localhost:8000/migrationConfig", {name: this.tenantTwoConfig})
-      console.log(setConfig)
+      var setConfig = await this.$http.post(
+        "http://localhost:8000/migrationConfig",
+        { name: this.tenantTwoConfig }
+      );
+      console.log(setConfig);
     },
     async checkIfAuthServer(key, item) {
       var component = this;
@@ -581,11 +604,18 @@ export default {
         if (item["_links"]["claims"]) {
           var href = item["_links"]["claims"]["href"];
           await component.$http
-            .get("http://localhost:8000/policy" + "?href=" + href + "&name=" + tenantOneConfig, {
-              params: {
-                name: component.tenantOneConfig
+            .get(
+              "http://localhost:8000/policy" +
+                "?href=" +
+                href +
+                "&name=" +
+                tenantOneConfig,
+              {
+                params: {
+                  name: component.tenantOneConfig
+                }
               }
-            })
+            )
             .then(function(response) {
               console.log(response);
               response.data.forEach(function(claim) {
@@ -601,11 +631,18 @@ export default {
         if (item["_links"]["scopes"]) {
           var href = item["_links"]["scopes"]["href"];
           await component.$http
-            .get("http://localhost:8000/policy" + "?href=" + href + "&name=" + tenantOneConfig, {
-              params: {
-                name: component.tenantOneConfig
+            .get(
+              "http://localhost:8000/policy" +
+                "?href=" +
+                href +
+                "&name=" +
+                tenantOneConfig,
+              {
+                params: {
+                  name: component.tenantOneConfig
+                }
               }
-            })
+            )
             .then(function(response) {
               console.log(response);
               response.data.forEach(function(scope) {
@@ -626,9 +663,16 @@ export default {
         if (item["_links"]["policies"]) {
           var href = item["_links"]["policies"]["href"];
           component.$http
-            .get("http://localhost:8000/policy" + "?href=" + href + "&name=" + tenantOneConfig, {
-             name: component.tenantOneConfig
-            })
+            .get(
+              "http://localhost:8000/policy" +
+                "?href=" +
+                href +
+                "&name=" +
+                tenantOneConfig,
+              {
+                name: component.tenantOneConfig
+              }
+            )
             .then(function(response) {
               console.log(response);
               var policies = response.data;
@@ -646,11 +690,18 @@ export default {
         } else if (item["_links"]["rules"]) {
           var href = item["_links"]["rules"]["href"];
           component.$http
-            .get("http://localhost:8000/policy" + "?href=" + href + "&name=" + tenantOneConfig, {
-              params: {
-                name: component.tenantOneConfig
+            .get(
+              "http://localhost:8000/policy" +
+                "?href=" +
+                href +
+                "&name=" +
+                tenantOneConfig,
+              {
+                params: {
+                  name: component.tenantOneConfig
+                }
               }
-            })
+            )
             .then(function(response) {
               window.alert("NFSBUFIH");
               console.log(response);
@@ -677,11 +728,18 @@ export default {
     async getPolicies(type, policyResource, href) {
       var component = this;
       component.$http
-        .get("http://localhost:8000/policy" + "?href=" + href + "&name=" + component.tenantOneConfig, {
-          params: {
-            name: component.tenantOneConfig
+        .get(
+          "http://localhost:8000/policy" +
+            "?href=" +
+            href +
+            "&name=" +
+            component.tenantOneConfig,
+          {
+            params: {
+              name: component.tenantOneConfig
+            }
           }
-        })
+        )
         .then(function(response) {
           var policies = response.data;
           var policyArray = [];
@@ -703,7 +761,7 @@ export default {
     async getRules(type, ruleResource, href) {
       component.$http
         .post("http://localhost:8000/policy", {
-         name: component.tenantOneConfig
+          name: component.tenantOneConfig
         })
         .then(function(response) {});
     },
@@ -740,37 +798,51 @@ export default {
     },
     async onSelect(items) {
       var component = this;
-      console.log(component.selected)
-      console.log("####")
-      console.log(items)
+      console.log(component.selected);
+      console.log("####");
+      console.log(items);
       var component = this;
-      var mostRecentItem = items[items.length - 1]
-      var links = Object.keys(mostRecentItem._links).filter(function(link){
-        return link.toString() == "claims" || link.toString() == "scopes" || link.toString() == "rules" || link.toString() == "policies"
-      }).map(function (filteredlink) {
-        return mostRecentItem._links[filteredlink].href
-      })
-      var children = await component.getChildrenCollection(links)
-      items[items.length - 1]["children"] = await children
+      var mostRecentItem = items[items.length - 1];
+      var links = Object.keys(mostRecentItem._links)
+        .filter(function(link) {
+          return (
+            link.toString() == "claims" ||
+            link.toString() == "scopes" ||
+            link.toString() == "rules" ||
+            link.toString() == "policies"
+          );
+        })
+        .map(function(filteredlink) {
+          return mostRecentItem._links[filteredlink].href;
+        });
+      var children = await component.getChildrenCollection(links);
+      items[items.length - 1]["children"] = await children;
       component.selected = items;
     },
     async getChildrenCollection(links) {
-      var component = this
-      links = Promise.all(links.map(async function(link){
-        var child = await component.getChildrenModels(link)
-        var type = child.type || link.split("/")[link.split("/").length - 1]
-        return {type: type, childObjects: child.children}
-      }))
-      return links || []
+      var component = this;
+      links = Promise.all(
+        links.map(async function(link) {
+          var child = await component.getChildrenModels(link);
+          var type = child.type || link.split("/")[link.split("/").length - 1];
+          return { type: type, childObjects: child.children };
+        })
+      );
+      return links || [];
     },
-    async getChildrenModels(href){
-      var component = this
-      var getChild = await component.$http.get("http://localhost:8000/children?href=" + href + "&name=" + component.tenantOneConfig)
-      console.log(getChild.data)
-      var children = getChild.data.children.filter(function(childResource){
-        return !childResource.system
-      })
-      return {type: getChild.data.type, children: children}
+    async getChildrenModels(href) {
+      var component = this;
+      var getChild = await component.$http.get(
+        "http://localhost:8000/children?href=" +
+          href +
+          "&name=" +
+          component.tenantOneConfig
+      );
+      console.log(getChild.data);
+      var children = getChild.data.children.filter(function(childResource) {
+        return !childResource.system;
+      });
+      return { type: getChild.data.type, children: children };
     },
     getAlternateLabel(count) {
       let plural = "";
@@ -782,8 +854,8 @@ export default {
       return `${count} user${plural} selected`;
     }
   },
-  mounted(){
-    this.getEnvironments()
+  mounted() {
+    this.getEnvironments();
   },
   computed: {
     headerStyle() {
@@ -835,6 +907,10 @@ export default {
   background: #aaa;
   z-index: 10;
   display: none;
+}
+
+.allow-scroll {
+  overflow-y: scroll;
 }
 
 .pirate {

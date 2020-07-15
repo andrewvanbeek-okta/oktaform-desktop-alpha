@@ -410,41 +410,41 @@ const init = async () => {
 
   });
 
-  app.get("/writePolicies", function (req, res) {
-    var request = require("request");
-    var resources = req.query.resource;
-    resources.forEach(function (resourceString) {
-      var resource = JSON.parse(resourceString);
-      var oktaJson = resource; // group json or authserver json
-      var fullModel = new ModelCreator({
-        type: oktaJson.type,
-        resource: oktaJson
-      });
-      var finalForm = fullModel.model.finalForm;
-      fs.appendFile(supportpath + "yoyo.tf", finalForm, function (err) {
-        if (err) throw err;
+  // app.get("/writePolicies", function (req, res) {
+  //   var request = require("request");
+  //   var resources = req.query.resource;
+  //   resources.forEach(function (resourceString) {
+  //     var resource = JSON.parse(resourceString);
+  //     var oktaJson = resource; // group json or authserver json
+  //     var fullModel = new ModelCreator({
+  //       type: oktaJson.type,
+  //       resource: oktaJson
+  //     });
+  //     var finalForm = fullModel.model.finalForm;
+  //     fs.appendFile(supportpath + "yoyo.tf", finalForm, function (err) {
+  //       if (err) throw err;
 
-      });
-    });
-    res.download({ type: "sources saved!" });
-  });
+  //     });
+  //   });
+  //   res.download({ type: "sources saved!" });
+  // });
 
-  app.get("/writePoliciesTwo", function (req, res) {
-    var request = require("request");
+  // app.get("/writePoliciesTwo", function (req, res) {
+  //   var request = require("request");
 
-    var resource = req.query.resource;
+  //   var resource = req.query.resource;
 
-    var oktaJson = resource; // group json or authserver json
+  //   var oktaJson = resource; // group json or authserver json
 
-    var fullModel = new ModelCreator({ type: oktaJson.type, resource: oktaJson });
+  //   var fullModel = new ModelCreator({ type: oktaJson.type, resource: oktaJson });
 
-    var finalForm = fullModel.model.finalForm;
-    fs.appendFile(supportpath + "yoyo.tf", finalForm, function (err) {
-      if (err) throw err;
+  //   var finalForm = fullModel.model.finalForm;
+  //   fs.appendFile(supportpath + "yoyo.tf", finalForm, function (err) {
+  //     if (err) throw err;
 
-    });
-    res.send({ type: "sources saved!" });
-  });
+  //   });
+  //   res.send({ type: "sources saved!" });
+  // });
 
 
 
@@ -476,40 +476,45 @@ const init = async () => {
           })
         })
       });
+    } 
+    var content = ""
+    if(fs.existsSync(supportpath + foldername + "/" + filename + ".tf")) {
+      content = fs.readFileSync(supportpath + foldername + "/" + filename + ".tf")
+      console.log(content)
     }
-    // childrenItems.forEach(function (oktaJson) {
-    //   var fullModel = new ModelCreator({
-    //     type: oktaJson.type,
-    //     resource: oktaJson
-    //   });
-    //   var finalForm = fullModel.model.finalForm;
-    //   itemsToWrite.push(finalForm);
-    // });
     itemsToWrite.forEach(async function (item, index, array) {
-      fs.appendFile(supportpath + foldername + "/" + filename + ".tf", item, function (err) {
-        if (err)
-          throw err;
-        if (index === (array.length - 1)) {
-          // This is the last one.
-          if (autogenerate) {
-            var util = require('util'),
-              exec = require('child_process').exec;
-            exec('terraform init && terraform apply -lock=false -auto-approve', {
-              cwd: supportpath + foldername
-            }, function (error, stdout, stderr) {
-              // work with result
-              console.log(error);
-              console.log(stdout);
-              console.log(stderr);
-            });
-            res.download(supportpath + foldername + "/" + filename + ".tf");
-          }
-          else {
-            res.download(supportpath + "oktaform.tf");
-          }
+      if(!content.includes(item)) {
+        fs.appendFileSync(supportpath + foldername + "/" + filename + ".tf", item, function (err) {
+          if (err)
+            throw err;
+        });
+      }
+      if (index === (array.length - 1)) {
+        // This is the last one.
+        if (autogenerate) {
+          var util = require('util'),
+            exec = require('child_process').exec;
+          exec('terraform init && terraform apply -lock=false -auto-approve', {
+            cwd: supportpath + foldername
+          }, function (error, stdout, stderr) {
+            // work with result
+            console.log(error);
+            console.log(stdout);
+            console.log(stderr);
+            res.send({message: stdout})
+          });
+         
+          //res.download(supportpath + foldername + "/" + filename + ".tf");
         }
-      });
+        else {
+          //res.download(supportpath + "oktaform.tf");
+        }
+      }
+
+
     });
+
+
   });
 
   app.get("/policy", async function (req, res) {
@@ -699,6 +704,7 @@ const init = async () => {
       console.log(error);
       console.log(stdout);
       console.log(stderr);
+      res.send({"message": stdout})
     });
   })
 
