@@ -2,7 +2,7 @@
 
 const path = require('path')
 const isDevelopment = process.env.NODE_ENV !== 'production'
-
+const axios = require('axios');
 
 
 var getAppDataPath = function () {
@@ -410,44 +410,6 @@ const init = async () => {
 
   });
 
-  // app.get("/writePolicies", function (req, res) {
-  //   var request = require("request");
-  //   var resources = req.query.resource;
-  //   resources.forEach(function (resourceString) {
-  //     var resource = JSON.parse(resourceString);
-  //     var oktaJson = resource; // group json or authserver json
-  //     var fullModel = new ModelCreator({
-  //       type: oktaJson.type,
-  //       resource: oktaJson
-  //     });
-  //     var finalForm = fullModel.model.finalForm;
-  //     fs.appendFile(supportpath + "yoyo.tf", finalForm, function (err) {
-  //       if (err) throw err;
-
-  //     });
-  //   });
-  //   res.download({ type: "sources saved!" });
-  // });
-
-  // app.get("/writePoliciesTwo", function (req, res) {
-  //   var request = require("request");
-
-  //   var resource = req.query.resource;
-
-  //   var oktaJson = resource; // group json or authserver json
-
-  //   var fullModel = new ModelCreator({ type: oktaJson.type, resource: oktaJson });
-
-  //   var finalForm = fullModel.model.finalForm;
-  //   fs.appendFile(supportpath + "yoyo.tf", finalForm, function (err) {
-  //     if (err) throw err;
-
-  //   });
-  //   res.send({ type: "sources saved!" });
-  // });
-
-
-
   app.post("/writeAll", function (req, res) {
     var autogenerate = true
     //console.log(req.body)
@@ -698,6 +660,36 @@ const init = async () => {
     var util = require('util'),
       exec = require('child_process').exec;
     exec('terraform init && terraform apply -lock=false -auto-approve', {
+      cwd: supportpath + foldername
+    }, function (error, stdout, stderr) {
+      // work with result
+      console.log(error);
+      console.log(stdout);
+      console.log(stderr);
+      res.send({"message": stdout})
+    });
+  })
+
+  app.get("/import", async function (req, res) {
+    var oktaConfig = await getEnvironment(req.query.name)
+    var url = oktaConfig.url
+    var token = oktaConfig.apiToken
+    console.log("HERE")
+    console.log(url)
+    console.log(token)
+    console.log(url + "/api/v1/authorizationServers/default")
+    var getDefaultResource = await axios.get(url + "/api/v1/authorizationServers/default", { headers: { "Authorization": "SSWS " + token, "Content-Type": "application/json",
+    "Accept": "application/json"} })
+    console.log(getDefaultResource.data)
+    var fullObject = getDefaultResource.data
+    var address = tfId(fullObject)
+    var id = fullObject.id
+    console.log("gets to apply")
+    var foldername = "oktaform_env_second_tenant.json".split(".json")[0]
+    console.log(supportpath + foldername)
+    var util = require('util'),
+      exec = require('child_process').exec;
+    exec('terraform init && terraform import' + ' ' + 'okta_auth_server.' + address + ' ' + id, {
       cwd: supportpath + foldername
     }, function (error, stdout, stderr) {
       // work with result

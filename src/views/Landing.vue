@@ -266,15 +266,15 @@
           <nav-tabs-card class="md-danger" no-label>
             <template slot="content">
               <md-tabs md-sync-route class="md-danger" md-alignment="left">
-                <md-tab id="tab-home" md-label="Response" md-icon="message"> -->
-                  <!-- //<div v-model="serverResponse">{{serverResponse}}</div> -->
-                <!-- </md-tab>
+        <md-tab id="tab-home" md-label="Response" md-icon="message">-->
+        <!-- //<div v-model="serverResponse">{{serverResponse}}</div> -->
+        <!-- </md-tab>
               </md-tabs>
             </template>
           </nav-tabs-card>
-        </md-content> -->
+        </md-content>-->
       </modal>
-      <v-dialog />
+      <v-dialog maxHeight="200px" scrollable="true" />
       <modal name v-if="classicModal" @close="classicModalHide">
         <template slot="header">
           <h4 class="modal-title">Modal Title</h4>
@@ -541,11 +541,21 @@ export default {
         });
     },
     showResponse(response) {
-      this.serverResponse = response;
+      var component = this;
+      this.serverResponse = response
       //this.classicModal = true
       this.$modal.show("dialog", {
         title: "Response",
-        text: response.message.replace(/(\r\n|\n|\r)/gm, "").trim()
+        text: response.message.replace(/(\r\n|\n|\r)/gm, "").trim().split(' to do so if necessary.')[1],
+        buttons: [
+          {
+            title: "Close",
+            handler: () => {
+              this.$modal.hide("dialog");
+              component.resetPage();
+            }
+          }
+        ]
       });
     },
     showCreateConfig() {
@@ -557,15 +567,6 @@ export default {
       console.log(this.resources[res]);
       if (this.selected.length == 0) {
         delete this.resources[res];
-      }
-      if (this.resources[res]) {
-        this.resources[res].forEach(function(item, key, arr) {
-          component.checkPoliciesAndRules(item);
-          component.checkIfAuthServer(res, item);
-          if (Object.is(arr.length - 1, key)) {
-            component.show();
-          }
-        });
       } else {
         component.show();
       }
@@ -625,173 +626,6 @@ export default {
       );
       console.log(setConfig);
     },
-    async checkIfAuthServer(key, item) {
-      var component = this;
-      if (key == "authorizationServers") {
-        if (item["_links"]["claims"]) {
-          var href = item["_links"]["claims"]["href"];
-          await component.$http
-            .get(
-              "http://localhost:8000/policy" +
-                "?href=" +
-                href +
-                "&name=" +
-                tenantOneConfig,
-              {
-                params: {
-                  name: component.tenantOneConfig
-                }
-              }
-            )
-            .then(function(response) {
-              console.log(response);
-              response.data.forEach(function(claim) {
-                var claimModel = claim;
-                var name = item.name || item.profile.name;
-                name = name.replace(/[^a-zA-Z ]/g, "");
-                claimModel["auth_server_id"] = name + item.id;
-                claimModel["type"] = "claim";
-                component.rules.push(claimModel);
-              });
-            });
-        }
-        if (item["_links"]["scopes"]) {
-          var href = item["_links"]["scopes"]["href"];
-          await component.$http
-            .get(
-              "http://localhost:8000/policy" +
-                "?href=" +
-                href +
-                "&name=" +
-                tenantOneConfig,
-              {
-                params: {
-                  name: component.tenantOneConfig
-                }
-              }
-            )
-            .then(function(response) {
-              console.log(response);
-              response.data.forEach(function(scope) {
-                var scopeModel = scope;
-                var name = item.name || item.profile.name;
-                name = item.replace(/[^a-zA-Z ]/g, "");
-                scopeModel["auth_server_id"] = name + item.id;
-                scopeModel["type"] = "scope";
-                component.rules.push(scopeModel);
-              });
-            });
-        }
-      }
-    },
-    async checkPoliciesAndRules(item) {
-      var component = this;
-      if (item["_links"]["policies"] || item["_links"]["rules"]) {
-        if (item["_links"]["policies"]) {
-          var href = item["_links"]["policies"]["href"];
-          component.$http
-            .get(
-              "http://localhost:8000/policy" +
-                "?href=" +
-                href +
-                "&name=" +
-                tenantOneConfig,
-              {
-                name: component.tenantOneConfig
-              }
-            )
-            .then(function(response) {
-              console.log(response);
-              var policies = response.data;
-              var policyArray = [];
-              response.data.forEach(function(policy) {
-                var policyModel = policy;
-                var name = item.name || item.profile.name;
-                name = item.replace(/[^a-zA-Z ]/g, "");
-                name = name.replace(/\s+/g, "");
-                policyModel["resourceName"] = name + item.id;
-                component.policies.push(policyModel);
-                component.checkPoliciesAndRules(policyModel);
-              });
-            });
-        } else if (item["_links"]["rules"]) {
-          var href = item["_links"]["rules"]["href"];
-          component.$http
-            .get(
-              "http://localhost:8000/policy" +
-                "?href=" +
-                href +
-                "&name=" +
-                tenantOneConfig,
-              {
-                params: {
-                  name: component.tenantOneConfig
-                }
-              }
-            )
-            .then(function(response) {
-              window.alert("NFSBUFIH");
-              console.log(response);
-              var policies = response.data;
-              var policyArray = [];
-              response.data.forEach(function(rule) {
-                var ruleModel = rule;
-                var name = item.name || item.profile.name;
-                name = name.replace(/[^a-zA-Z ]/g, "");
-                name = name.replace(/\s+/g, "");
-                ruleModel["resourceName"] = name + item.id;
-                if (rule.type == "RESOURCE_ACCESS") {
-                  ruleModel["auth_server_id"] = item["resourceName"];
-                }
-                component.rules.push(ruleModel);
-                component.checkPoliciesAndRules(ruleModel);
-              });
-            });
-        }
-      } else {
-        return "no children objects";
-      }
-    },
-    async getPolicies(type, policyResource, href) {
-      var component = this;
-      component.$http
-        .get(
-          "http://localhost:8000/policy" +
-            "?href=" +
-            href +
-            "&name=" +
-            component.tenantOneConfig,
-          {
-            params: {
-              name: component.tenantOneConfig
-            }
-          }
-        )
-        .then(function(response) {
-          var policies = response.data;
-          var policyArray = [];
-          response.data.forEach(function(policy) {
-            var policyModel = policy;
-            policyModel["resourceName"] =
-              policyResource.name + policyResource.id;
-            component.policies.push(policyModel);
-            if (policy["_links"]["rules"]["href"]) {
-              component.getRules(
-                policy.type,
-                policy,
-                policy["_links"]["rules"]["href"]
-              );
-            }
-          });
-        });
-    },
-    async getRules(type, ruleResource, href) {
-      component.$http
-        .post("http://localhost:8000/policy", {
-          name: component.tenantOneConfig
-        })
-        .then(function(response) {});
-    },
     pullResources() {
       var component = this;
       const baseURI = "";
@@ -825,9 +659,6 @@ export default {
     },
     async onSelect(items) {
       var component = this;
-      console.log(component.selected);
-      console.log("####");
-      console.log(items);
       var component = this;
       var mostRecentItem = items[items.length - 1];
       var links = Object.keys(mostRecentItem._links)
@@ -844,7 +675,17 @@ export default {
         });
       var children = await component.getChildrenCollection(links);
       items[items.length - 1]["children"] = await children;
+      if(mostRecentItem.name.toUpperCase().includes("DEFAULT")) {
+        console.log("YAKA YAKA YAKA")
+        component.dafaultImport(mostRecentItem)
+      }
       component.selected = items;
+    },
+    async dafaultImport(item) {
+       var getImport = await this.$http.get(
+        "http://localhost:8000/import?name=" +
+          this.tenantTwoConfig
+      );
     },
     async getChildrenCollection(links) {
       var component = this;
@@ -960,5 +801,25 @@ export default {
 div.md-card-header.md-danger {
   background-color: #c9446e;
 }
+
+
+.dialog-content {
+    flex: 10 auto;
+    width: 100%;
+    padding: 15px;
+    font-size: 14px;
+    max-height: 50em;
+    overflow-y: scroll;
+}
+
+
+.dialog-content {
+    flex: 10 auto;
+    width: 100%;
+    padding: 15px;
+    font-size: 14px;
+    height: 10em;
+}
+
 </style>
 
