@@ -217,11 +217,12 @@ const init = async () => {
       this.value = claim.value;
       this.claim_type = claim.claimType;
       this.auth_server_id = "${okta_auth_server." + claim.parentid + ".id}";
+      this.group_filter_type = claim.group_filter_type
       this.finalForm = tfGenerate(
         this,
         claim,
         "okta_auth_server_claim",
-        Object.keys(this)
+        Object.keys(claim.group_filter_type ? this : {name: this.name, status: this.status, value_type: this.value_type, value: this.value, claim_type: this.claim_type, auth_server_id: this.auth_server_id})
       )
       this.terraformId = tfId(claim)
     }
@@ -428,24 +429,24 @@ const init = async () => {
         var fullModel = new ModelCreator({ type: itemKey, resource: oktaJson });
         var finalForm = fullModel.model.finalForm;
         itemsToWrite.push(finalForm);
-        oktaJson.children.forEach(function(child){
+        oktaJson.children.forEach(function (child) {
           var childType = child.type
           console.log("HERE")
-          child.childObjects.forEach(function(child){
+          child.childObjects.forEach(function (child) {
             child.parentid = fullModel.model.terraformId
             var childModel = new ModelCreator({ type: childType, resource: child })
             itemsToWrite.push(childModel.model.finalForm)
           })
         })
       });
-    } 
+    }
     var content = ""
-    if(fs.existsSync(supportpath + foldername + "/" + filename + ".tf")) {
+    if (fs.existsSync(supportpath + foldername + "/" + filename + ".tf")) {
       content = fs.readFileSync(supportpath + foldername + "/" + filename + ".tf")
       console.log(content)
     }
     itemsToWrite.forEach(async function (item, index, array) {
-      if(!content.includes(item)) {
+      if (!content.includes(item)) {
         fs.appendFileSync(supportpath + foldername + "/" + filename + ".tf", item, function (err) {
           if (err)
             throw err;
@@ -463,9 +464,9 @@ const init = async () => {
             console.log(error);
             console.log(stdout);
             console.log(stderr);
-            res.send({message: stdout})
+            res.send({ message: stdout })
           });
-         
+
           //res.download(supportpath + foldername + "/" + filename + ".tf");
         }
         else {
@@ -479,47 +480,47 @@ const init = async () => {
 
   });
 
-  app.get("/policy", async function (req, res) {
-    var request = require("request");
-    console.log("GETS HERE")
-    var oktaConfig = await getEnvironment(req.query.name)
-    var href = req.query.href
-    var token = oktaConfig.apiToken
-    var options = {
-      method: "GET",
-      url: href,
-      headers: {
-        "Cache-Control": "no-cache",
-        Authorization: "SSWS " + token,
-        "Content-Type": "application/json",
-        Accept: "application/json"
-      }
-    };
-    request(options, function (error, response, body) {
-      console.log(body)
-      res.send(body);
-    });
-  });
+  // app.get("/policy", async function (req, res) {
+  //   var request = require("request");
+  //   console.log("GETS HERE")
+  //   var oktaConfig = await getEnvironment(req.query.name)
+  //   var href = req.query.href
+  //   var token = oktaConfig.apiToken
+  //   var options = {
+  //     method: "GET",
+  //     url: href,
+  //     headers: {
+  //       "Cache-Control": "no-cache",
+  //       Authorization: "SSWS " + token,
+  //       "Content-Type": "application/json",
+  //       Accept: "application/json"
+  //     }
+  //   };
+  //   request(options, function (error, response, body) {
+  //     console.log(body)
+  //     res.send(body);
+  //   });
+  // });
 
-  app.post("/policy", async function (req, res) {
-    var request = require("request");
-    var oktaConfig = await getEnvironment(req.body.name)
-    var href = req.query.href
-    var token = oktaConfig.apiToken
-    var options = {
-      method: "GET",
-      url: href,
-      headers: {
-        "Cache-Control": "no-cache",
-        Authorization: "SSWS " + token,
-        "Content-Type": "application/json",
-        Accept: "application/json"
-      }
-    };
-    request(options, function (error, response, body) {
-      res.send(body);
-    });
-  });
+  // app.post("/policy", async function (req, res) {
+  //   var request = require("request");
+  //   var oktaConfig = await getEnvironment(req.body.name)
+  //   var href = req.query.href
+  //   var token = oktaConfig.apiToken
+  //   var options = {
+  //     method: "GET",
+  //     url: href,
+  //     headers: {
+  //       "Cache-Control": "no-cache",
+  //       Authorization: "SSWS " + token,
+  //       "Content-Type": "application/json",
+  //       Accept: "application/json"
+  //     }
+  //   };
+  //   request(options, function (error, response, body) {
+  //     res.send(body);
+  //   });
+  // });
 
   app.get("/resource", async function (req, res) {
     var request = require("request");
@@ -594,7 +595,7 @@ const init = async () => {
     })
   })
 
-  app.get("/children", async function(req, res){
+  app.get("/children", async function (req, res) {
     var request = require("request");
     var oktaConfig = await getEnvironment(req.query.name)
     var href = req.query.href
@@ -614,10 +615,10 @@ const init = async () => {
     request(options, function (error, response, body) {
       console.log(body)
       var type = "none"
-      if(body[0]) {
+      if (body[0]) {
         type = body[0].type
       }
-      res.send({"children": body, "type": type});
+      res.send({ "children": body, "type": type });
     });
   })
 
@@ -645,7 +646,7 @@ const init = async () => {
           console.log(directory_path + "/" + file)
           var timestamp = fs.statSync(directory_path + "/" + file).mtime.getTime()
           const date = new Date(timestamp);
-          return { name: file, timestamp: date, folder: name}
+          return { name: file, timestamp: date, folder: name }
         })
         res.send({ files: targetFiles })
       }
@@ -666,38 +667,76 @@ const init = async () => {
       console.log(error);
       console.log(stdout);
       console.log(stderr);
-      res.send({"message": stdout})
+      res.send({ "message": stdout })
     });
   })
 
-  app.get("/import", async function (req, res) {
-    var oktaConfig = await getEnvironment(req.query.name)
+  app.post("/import", async function (req, res) {
+    var foldername = req.body.name.split(".json")[0]
+    var oktaConfig = await getEnvironment(req.body.name)
     var url = oktaConfig.url
     var token = oktaConfig.apiToken
-    console.log("HERE")
-    console.log(url)
-    console.log(token)
     console.log(url + "/api/v1/authorizationServers/default")
-    var getDefaultResource = await axios.get(url + "/api/v1/authorizationServers/default", { headers: { "Authorization": "SSWS " + token, "Content-Type": "application/json",
-    "Accept": "application/json"} })
-    console.log(getDefaultResource.data)
-    var fullObject = getDefaultResource.data
-    var address = tfId(fullObject)
-    var id = fullObject.id
-    console.log("gets to apply")
-    var foldername = "oktaform_env_second_tenant.json".split(".json")[0]
-    console.log(supportpath + foldername)
-    var util = require('util'),
-      exec = require('child_process').exec;
-    exec('terraform init && terraform import' + ' ' + 'okta_auth_server.' + address + ' ' + id, {
-      cwd: supportpath + foldername
-    }, function (error, stdout, stderr) {
-      // work with result
-      console.log(error);
-      console.log(stdout);
-      console.log(stderr);
-      res.send({"message": stdout})
-    });
+    var headers = {
+      "Authorization": "SSWS " + token, "Content-Type": "application/json",
+      "Accept": "application/json"
+    }
+    var defaultObject = {}
+    var resource = ""
+    if(req.body.type == "authorizationServers") {
+      var migratedServer = req.body.resource
+      var getDefaultResourceServer = await axios.get(url + "/api/v1/authorizationServers?q=default&limit=1", { headers: headers })
+      var defaultServer = getDefaultResourceServer.data[0]
+      var serverAddress = tfId(migratedServer)
+      var serverId = defaultServer.id
+      var fullModel = new ModelCreator({ type: "authorizationServers", resource: migratedServer});
+      var finalForm = fullModel.model.finalForm;
+      defaultObject = { "type": "okta_auth_server", tf: finalForm, id: serverId, address: serverAddress }
+    } else {
+      var migratedPolicy = req.body.resource
+      console.log(url + "api/v1/policies?type=OKTA_SIGN_ON")
+      var getDefaultPolicy = await axios.get(url + "/api/v1/policies?type=OKTA_SIGN_ON", { headers: headers })
+      console.log(getDefaultPolicy.data)
+      var defaultPolicy = getDefaultPolicy.data.find(policy => policy.system)
+      console.log(defaultPolicy)
+      var policyAddress = tfId(migratedPolicy)
+      var polciyId = defaultPolicy.id
+      var fullModel = new ModelCreator({ type: "OKTA_SIGN_ON", resource: migratedPolicy });
+      var finalForm = fullModel.model.finalForm;
+      defaultObject = { "type": "okta_policy_signon", tf: finalForm, id: polciyId, address: policyAddress }
+    }
+
+    var file = supportpath + foldername + "/oktaform.tf"
+    //if (!fs.existsSync(file)) {
+      var content = ""
+      if (fs.existsSync(supportpath + foldername + "/oktaform.tf")) {
+        content = fs.readFileSync(supportpath + foldername + "/oktaform.tf")
+        console.log(content)
+      }
+      console.log(supportpath + foldername + "/oktaform.tf")
+      var fullAddress = defaultObject.type + "." + defaultObject.address
+      var resourceHeader = fullAddress.split(".").slice(0, 2).map(function(addressString){ return `"${addressString}"`}).join(" ")
+      console.log("this is the resource header")
+      console.log(resourceHeader)
+      if (!content.includes(resourceHeader)){
+        fs.appendFileSync(supportpath + foldername + "/oktaform.tf", defaultObject.tf, function (err) {
+          console.log(err)
+        })
+
+        console.log(fullAddress)
+        var util = require('util'),
+          exec = require('child_process').exec;
+        exec(`terraform init && terraform import ${fullAddress} ${defaultObject.id}`, {
+          cwd: supportpath + foldername
+        }, function (error, stdout, stderr) {
+          // work with result
+          console.log(error);
+          console.log(stdout);
+          console.log(stderr);
+          //res.send({ "message": stdout })
+        });
+      }
+    //}
   })
 
   app.post("/environment", async function (req, res) {
@@ -801,6 +840,7 @@ import {
   installVueDevtools
 } from 'vue-cli-plugin-electron-builder/lib'
 import { support } from 'jquery';
+import { timeStamp } from 'console';
 // const isDevelopment = process.env.NODE_ENV !== 'production'
 
 // Keep a global reference of the window object, if you don't, the window will

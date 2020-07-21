@@ -624,6 +624,7 @@ export default {
         "http://localhost:8000/migrationConfig",
         { name: this.tenantTwoConfig }
       );
+      //this.defaultImport()
       console.log(setConfig);
     },
     pullResources() {
@@ -676,16 +677,19 @@ export default {
       var children = await component.getChildrenCollection(links);
       items[items.length - 1]["children"] = await children;
       if(mostRecentItem.name.toUpperCase().includes("DEFAULT")) {
-        console.log("YAKA YAKA YAKA")
-        component.dafaultImport(mostRecentItem)
+        if(mostRecentItem._links.self.href.includes("policies") || mostRecentItem._links.self.href.includes("authorizationServers")) {
+           component.defaultImport(mostRecentItem)
+        }
       }
       component.selected = items;
     },
-    async dafaultImport(item) {
-       var getImport = await this.$http.get(
-        "http://localhost:8000/import?name=" +
-          this.tenantTwoConfig
-      );
+    async defaultImport(item) {  
+      this.$http
+        .post(`http://localhost:8000/import`, {
+        name: this.tenantTwoConfig,
+        resource: item,
+        type: item._links.self.href.split("v1/")[1].split("/")[0]
+        })
     },
     async getChildrenCollection(links) {
       var component = this;
