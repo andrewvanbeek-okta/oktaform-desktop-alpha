@@ -443,10 +443,24 @@ const init = async () => {
     var content = ""
     if (fs.existsSync(supportpath + foldername + "/" + filename + ".tf")) {
       content = fs.readFileSync(supportpath + foldername + "/" + filename + ".tf")
+      //console.log(content)
+    }
+    console.log(supportpath + foldername + "/default.tf")
+    if (fs.existsSync(supportpath + foldername + "/default.tf")) {
+      content += fs.readFileSync(supportpath + foldername + "/default.tf")
       console.log(content)
     }
+    
     itemsToWrite.forEach(async function (item, index, array) {
-      if (!content.includes(item)) {
+     // console.log(item)
+     console.log("CHECK")
+    //  console.log(content.toString().trim())
+    //  console.log(item.toString().trim())
+     console.log(item.toString().trim() == content.toString().trim())
+      console.log(content.toString().includes(item.toString()))
+      console.log("CHECK")
+      content = content.toString().trim()
+      if (!content.includes(item.toString().trim())) {
         fs.appendFileSync(supportpath + foldername + "/" + filename + ".tf", item, function (err) {
           if (err)
             throw err;
@@ -706,20 +720,20 @@ const init = async () => {
       defaultObject = { "type": "okta_policy_signon", tf: finalForm, id: polciyId, address: policyAddress }
     }
 
-    var file = supportpath + foldername + "/oktaform.tf"
+    var file = supportpath + foldername + "/default.tf"
     //if (!fs.existsSync(file)) {
       var content = ""
-      if (fs.existsSync(supportpath + foldername + "/oktaform.tf")) {
-        content = fs.readFileSync(supportpath + foldername + "/oktaform.tf")
+      if (fs.existsSync(supportpath + foldername + "/default.tf")) {
+        content = fs.readFileSync(supportpath + foldername + "/default.tf")
         console.log(content)
       }
-      console.log(supportpath + foldername + "/oktaform.tf")
+      console.log(supportpath + foldername + "/default.tf")
       var fullAddress = defaultObject.type + "." + defaultObject.address
       var resourceHeader = fullAddress.split(".").slice(0, 2).map(function(addressString){ return `"${addressString}"`}).join(" ")
       console.log("this is the resource header")
       console.log(resourceHeader)
       if (!content.includes(resourceHeader)){
-        fs.appendFileSync(supportpath + foldername + "/oktaform.tf", defaultObject.tf, function (err) {
+        fs.appendFileSync(supportpath + foldername + "/default.tf", defaultObject.tf, function (err) {
           console.log(err)
         })
 
