@@ -146,13 +146,54 @@
                   <md-button v-on:click="pullResources()" class="md-danger">Get Okta Config</md-button>
                 </div>
               </div>
+              <v-text-field
+                v-model="search"
+                append-icon="search"
+                label="Search"
+                single-line
+                hide-details
+              ></v-text-field>
+                            <v-data-table
+    v-model="selected"
+    :headers="headers"
+    :items="desserts"
+    :single-select="singleSelect"
+    item-key="name"
+    show-select
+  >
+  
+    <template v-slot:top>
+      <v-switch v-model="singleSelect" label="Single select" class="pa-3"></v-switch>
+    </template>
+  </v-data-table>
 
               <center></center>
               <vue-tabs>
                 <v-tab v-for="(table, i) in tables" v-if="renderComponent" :title="tables[i].title">
                   <div style="align-items: flex-start;" class="full-table">
                     <h1>{{tables[i].title}}</h1>
-                    <md-table v-model="tables[i].respData" md-card @md-selected="onSelect">
+               <v-data-table
+    v-model="selected"
+    :headers="headers"
+    :items="desserts"
+    :single-select="singleSelect"
+    item-key="name"
+    show-select
+    class="elevation-1"
+  >
+    <template v-slot:top>
+      <v-switch v-model="singleSelect" label="Single select" class="pa-3"></v-switch>
+    </template>
+  </v-data-table>
+                      <!-- <v-data-table
+                      :headers="tables[i].headers"
+                      :items="tables[i].respData"
+                      :search="search"
+                      :single-select="singleSelect"
+                      item-key="name"
+                      show-select
+                    ></v-data-table> -->
+                    <!-- <md-table v-model="tables[i].respData" md-card @md-selected="onSelect">
                       <md-table-toolbar>
                         <h1 class="md-title">With auto select and alternate headers</h1>
                       </md-table-toolbar>
@@ -177,7 +218,7 @@
                           md-sort-by="name"
                         >{{ item[key] }}</md-table-cell>
                       </md-table-row>
-                    </md-table>
+                    </md-table>-->
                     <md-button
                       v-on:click="sendApiResource(tables[i].title)"
                       class="md-danger"
@@ -355,6 +396,15 @@ import { AtomSpinner } from "epic-spinners";
 import FileDownload from "js-file-download";
 import Loading from "vue-loading-overlay";
 import { LoginCard } from "@/components";
+
+const searchByName = (items, term) => {
+  if (term) {
+    return items.filter(item => toLower(item.name).includes(toLower(term)));
+  }
+
+  return items;
+};
+
 export default {
   bodyClass: "landing-page",
   props: {
@@ -387,6 +437,8 @@ export default {
     return {
       url: null,
       resources: {},
+      singleSelect: false,
+      search: "",
       policies: [],
       badUrl: false,
       folders: [],
@@ -412,6 +464,7 @@ export default {
       oktaTenantTwoApiToken: "",
       apiToken: null,
       message: null,
+      searched: "",
       selected: [],
       loading: "",
       filename: "oktaform",
@@ -420,7 +473,30 @@ export default {
       addedTables: [],
       render: false,
       files: [{ name: "test" }],
-      rezources: []
+      rezources: [],
+      headers: [
+        {
+          text: "Dessert (100g serving)",
+          align: "start",
+          sortable: false,
+          value: "name"
+        },
+        { text: "Calories", value: "calories" },
+        { text: "Fat (g)", value: "fat" },
+        { text: "Carbs (g)", value: "carbs" },
+        { text: "Protein (g)", value: "protein" },
+        { text: "Iron (%)", value: "iron" }
+      ],
+      desserts: [
+        {
+          name: "Frozen Yogurt",
+          calories: 159,
+          fat: 6.0,
+          carbs: 24,
+          protein: 4.0,
+          iron: "1%"
+        }
+      ]
     };
   },
   methods: {
@@ -544,11 +620,14 @@ export default {
     },
     showResponse(response) {
       var component = this;
-      this.serverResponse = response
+      this.serverResponse = response;
       //this.classicModal = true
       this.$modal.show("dialog", {
         title: "Response",
-        text: response.message.replace(/(\r\n|\n|\r)/gm, "").trim().split(' to do so if necessary.')[1],
+        text: response.message
+          .replace(/(\r\n|\n|\r)/gm, "")
+          .trim()
+          .split(" to do so if necessary.")[1],
         buttons: [
           {
             title: "Close",
@@ -622,7 +701,9 @@ export default {
       return environment;
     },
     async applyEnvironmentTwo() {
-      this.tenantTwoName = this.tenantTwoConfig.split("oktaform_env_")[1].split(".json")[0]
+      this.tenantTwoName = this.tenantTwoConfig
+        .split("oktaform_env_")[1]
+        .split(".json")[0];
       var setConfig = await this.$http.post(
         "http://localhost:8000/migrationConfig",
         { name: this.tenantTwoConfig }
@@ -631,7 +712,9 @@ export default {
       console.log(setConfig);
     },
     pullResources() {
-      this.tenantOneName = this.tenantOneConfig.split("oktaform_env_")[1].split(".json")[0]
+      this.tenantOneName = this.tenantOneConfig
+        .split("oktaform_env_")[1]
+        .split(".json")[0];
       var component = this;
       const baseURI = "";
       var resources = [
@@ -650,7 +733,23 @@ export default {
             resource: rez
           })
           .then(function(response) {
-            component.tables.push({ title: rez, respData: response.data });
+            console.log(response.data);
+            var headers = Object.keys(response.data[0]);
+            headers = headers.map(function(oktaResourceKey) {
+              return {
+                text: oktaResourceKey,
+                value: oktaResourceKey
+              }
+            })
+            console.log(headers)
+            var table = {
+              title: rez,
+              respData: response.data,
+              headers: headers
+            }
+            console.log("BELOW IS THE TABLE")
+            console.log(headers)
+            component.tables.push(table);
             component.rezources = response.data;
             component.renderComponent = false;
             component.$nextTick(() => {
@@ -680,23 +779,26 @@ export default {
         });
       var children = await component.getChildrenCollection(links);
       items[items.length - 1]["children"] = await children;
-      if(items[items.length - 1].name.toUpperCase().includes("DEFAULT") && items[items.length - 1].system) {
-        items[items.length - 1].name = "Oktaform:default: " + component.tenantOneName
+      if (
+        items[items.length - 1].name.toUpperCase().includes("DEFAULT") &&
+        items[items.length - 1].system
+      ) {
+        items[items.length - 1].name =
+          "Oktaform:default: " + component.tenantOneName;
       }
-      if(mostRecentItem.name.toUpperCase().includes("DEFAULT")) {
-        if(mostRecentItem._links.self.href.includes("authorizationServers")) {
-           component.defaultImport(mostRecentItem)
+      if (mostRecentItem.name.toUpperCase().includes("DEFAULT")) {
+        if (mostRecentItem._links.self.href.includes("authorizationServers")) {
+          component.defaultImport(mostRecentItem);
         }
       }
       component.selected = items;
     },
-    async defaultImport(item) {  
-      this.$http
-        .post(`http://localhost:8000/import`, {
+    async defaultImport(item) {
+      this.$http.post(`http://localhost:8000/import`, {
         name: this.tenantTwoConfig,
         resource: item,
         type: item._links.self.href.split("v1/")[1].split("/")[0]
-        })
+      });
     },
     async getChildrenCollection(links) {
       var component = this;
@@ -722,6 +824,9 @@ export default {
         return !childResource.system;
       });
       return { type: getChild.data.type, children: children };
+    },
+    searchOnTable() {
+      //this.searched = searchByName(this.users, this.search)
     },
     getAlternateLabel(count) {
       let plural = "";
@@ -813,24 +918,21 @@ div.md-card-header.md-danger {
   background-color: #c9446e;
 }
 
-
 .dialog-content {
-    flex: 10 auto;
-    width: 100%;
-    padding: 15px;
-    font-size: 14px;
-    max-height: 50em;
-    overflow-y: scroll;
+  flex: 10 auto;
+  width: 100%;
+  padding: 15px;
+  font-size: 14px;
+  max-height: 50em;
+  overflow-y: scroll;
 }
 
-
 .dialog-content {
-    flex: 10 auto;
-    width: 100%;
-    padding: 15px;
-    font-size: 14px;
-    height: 10em;
+  flex: 10 auto;
+  width: 100%;
+  padding: 15px;
+  font-size: 14px;
+  height: 10em;
 }
-
 </style>
 

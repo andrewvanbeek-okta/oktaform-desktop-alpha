@@ -20,6 +20,8 @@ import VModal from 'vue-js-modal'
 import VueMaterial from 'vue-material'
 import 'vue-material/dist/vue-material.min.css'
 import MaterialKit from "./plugins/material-kit";
+import vuetify from "@/plugins/vuetify";
+
 
 
 Vue.config.productionTip = false;
@@ -41,5 +43,6 @@ Vue.mixin({
 
 new Vue({
   router,
+  vuetify,
   render: h => h(App)
 }).$mount("#app");

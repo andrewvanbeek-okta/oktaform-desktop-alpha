@@ -19,6 +19,7 @@
   "main": "background.js",
   "dependencies": {
     "@hapi/hapi": "^19.1.1",
+    "@mdi/font": "^5.3.45",
     "@okta/okta-vue": "^2.0.0",
     "axios": "^0.19.0",
     "babel-helper-vue-jsx-merge-props": "^2.0.3",
@@ -50,7 +51,7 @@
     "vue-simple-spinner": "^1.2.8",
     "vue-spinner": "^1.0.3",
     "vue-spinner-component": "^1.0.5",
-    "vuetify": "^2.0.14"
+    "vuetify": "^2.3.5"
   },
   "protocols": {
     "name": "oktaform-protocol",
