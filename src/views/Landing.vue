@@ -108,7 +108,7 @@
                           <md-option
                             v-for="env in environments"
                             :value="env.name"
-                          >{{env.name.split("oktaform_env_")[1]}}</md-option>
+                          >{{env.name.split("oktaform_env_")[1].split(".json")[0]}}</md-option>
                         </md-select>
                       </md-field>
                     </login-card>
@@ -131,7 +131,7 @@
                           <md-option
                             v-for="env in environments"
                             :value="env.name"
-                          >{{env.name.split("oktaform_env_")[1]}}</md-option>
+                          >{{env.name.split("oktaform_env_")[1].split(".json")[0]}}</md-option>
                         </md-select>
                       </md-field>
                     </login-card>
@@ -392,6 +392,8 @@ export default {
       folders: [],
       tenantOneConfig: "",
       tenantTwoConfig: "",
+      tenantTwoName: "",
+      tenantOneName: "",
       emptyTokenField: "",
       emptyUrlField: "",
       emptyNameField: "",
@@ -620,6 +622,7 @@ export default {
       return environment;
     },
     async applyEnvironmentTwo() {
+      this.tenantTwoName = this.tenantTwoConfig.split("oktaform_env_")[1].split(".json")[0]
       var setConfig = await this.$http.post(
         "http://localhost:8000/migrationConfig",
         { name: this.tenantTwoConfig }
@@ -628,6 +631,7 @@ export default {
       console.log(setConfig);
     },
     pullResources() {
+      this.tenantOneName = this.tenantOneConfig.split("oktaform_env_")[1].split(".json")[0]
       var component = this;
       const baseURI = "";
       var resources = [
@@ -676,8 +680,11 @@ export default {
         });
       var children = await component.getChildrenCollection(links);
       items[items.length - 1]["children"] = await children;
+      if(items[items.length - 1].name.toUpperCase().includes("DEFAULT") && items[items.length - 1].system) {
+        items[items.length - 1].name = "Oktaform:default: " + component.tenantOneName
+      }
       if(mostRecentItem.name.toUpperCase().includes("DEFAULT")) {
-        if(mostRecentItem._links.self.href.includes("policies") || mostRecentItem._links.self.href.includes("authorizationServers")) {
+        if(mostRecentItem._links.self.href.includes("authorizationServers")) {
            component.defaultImport(mostRecentItem)
         }
       }

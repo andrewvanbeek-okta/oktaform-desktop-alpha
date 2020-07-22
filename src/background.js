@@ -494,48 +494,6 @@ const init = async () => {
 
   });
 
-  // app.get("/policy", async function (req, res) {
-  //   var request = require("request");
-  //   console.log("GETS HERE")
-  //   var oktaConfig = await getEnvironment(req.query.name)
-  //   var href = req.query.href
-  //   var token = oktaConfig.apiToken
-  //   var options = {
-  //     method: "GET",
-  //     url: href,
-  //     headers: {
-  //       "Cache-Control": "no-cache",
-  //       Authorization: "SSWS " + token,
-  //       "Content-Type": "application/json",
-  //       Accept: "application/json"
-  //     }
-  //   };
-  //   request(options, function (error, response, body) {
-  //     console.log(body)
-  //     res.send(body);
-  //   });
-  // });
-
-  // app.post("/policy", async function (req, res) {
-  //   var request = require("request");
-  //   var oktaConfig = await getEnvironment(req.body.name)
-  //   var href = req.query.href
-  //   var token = oktaConfig.apiToken
-  //   var options = {
-  //     method: "GET",
-  //     url: href,
-  //     headers: {
-  //       "Cache-Control": "no-cache",
-  //       Authorization: "SSWS " + token,
-  //       "Content-Type": "application/json",
-  //       Accept: "application/json"
-  //     }
-  //   };
-  //   request(options, function (error, response, body) {
-  //     res.send(body);
-  //   });
-  // });
-
   app.get("/resource", async function (req, res) {
     var request = require("request");
     var object = req.query.resource;

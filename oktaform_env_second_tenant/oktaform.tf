@@ -1,3 +1,14 @@
+resource "okta_policy_signon" "Oktaformdefaultavbpreviewtenant00pgub6xfcOajd0040h7" {
+status = "ACTIVE"
+name = "Oktaform:default: avb preview tenant"
+description = "The default policy applies in all situations if no other policy applies."
+}
+resource "okta_policy_rule_signon" "NondefaultRule0prsv8zgg3nAoXV9w0h7" {
+status = "ACTIVE"
+name = "Non default Rule"
+policyid = "${okta_policy_signon.Oktaformdefaultavbpreviewtenant00pgub6xfcOajd0040h7.id}"
+access = "ALLOW"
+}
 resource "okta_auth_server_claim" "factorIdoclhj12z0jYdAF83R0h7" {
 name = "factorId"
 status = "ACTIVE"
