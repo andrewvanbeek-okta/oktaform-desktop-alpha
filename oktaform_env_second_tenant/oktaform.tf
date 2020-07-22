@@ -225,3 +225,275 @@ name = "truefx-read-only"
 description = null
 auth_server_id = "${okta_auth_server.defaultausgub6xfsZCb1A5O0h7.id}"
 }
+resource "okta_auth_server" "bankingapiauslsufk8uOMda6v60h7" {
+audiences = ["api://default"]
+description = null
+name = "banking api"
+}
+resource "okta_auth_server_claim" "useroclmwkht2vw83IFBT0h7" {
+name = "user"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "\"david\""
+claim_type = "RESOURCE"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_claim" "hroclmwkkj2sjtVZ3rq0h7" {
+name = "hr"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "true"
+claim_type = "RESOURCE"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_claim" "azpoclmwkodtjKVkE4ln0h7" {
+name = "azp"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "\"david\""
+claim_type = "RESOURCE"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_claim" "userlinkocln0461abR0WRkLA0h7" {
+name = "user.link"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "user.user_1"
+claim_type = "RESOURCE"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_claim" "tosoclncmz42rsBq9nOt0h7" {
+name = "tos"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "user.tos"
+claim_type = "RESOURCE"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_claim" "spaghettioclnepvywilzoZy5b0h7" {
+name = "spaghetti"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "\"spaghetti\""
+claim_type = "RESOURCE"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_claim" "applicationContextoclnjyzs2xWreURPf0h7" {
+name = "applicationContext"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "user.applicationContext"
+claim_type = "RESOURCE"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_claim" "subordinatesoclnnoers9Rr5s2Vn0h7" {
+name = "subordinates"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "user.subordinates"
+claim_type = "RESOURCE"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_claim" "testoclno08wp1iSJFOAO0h7" {
+name = "test"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "user.firstName"
+claim_type = "IDENTITY"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_claim" "cheatingoclno0ayonIV9BuW80h7" {
+name = "cheating"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "\"THE CHEAT\""
+claim_type = "IDENTITY"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_claim" "deletemodelsoclnphnvxfXZygyA70h7" {
+name = "delete_models"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "user.delete_models"
+claim_type = "IDENTITY"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_claim" "connectedcrmoclns7c2is44n8OT80h7" {
+name = "connected_crm"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "user.crm_connected"
+claim_type = "RESOURCE"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_claim" "emailtypeoclnv8y5yrFGqDzBv0h7" {
+name = "email_type"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "appuser.email_type"
+claim_type = "RESOURCE"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_claim" "tenantnameoclnvcpeyhtmI5LbG0h7" {
+name = "tenant_name"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "appuser.tenant_name"
+claim_type = "RESOURCE"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_claim" "dbguidinuserinfooclowggt30M0ziuTN0h7" {
+name = "db_guid_in_userinfo"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "user.redi2_database_user_id"
+claim_type = "IDENTITY"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_claim" "dbguidintheatokenoclowgihq1RX53NMR0h7" {
+name = "db_guid_in_the_a_token"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "user.redi2_database_user_id"
+claim_type = "RESOURCE"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_claim" "dbguidinidtokenoclowgitz1G9SUXzh0h7" {
+name = "db_guid_in_id_token"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "user.redi2_database_user_id"
+claim_type = "IDENTITY"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_claim" "usersgroupoclowgz2boXe2GPxg0h7" {
+status = "ACTIVE"
+name = "users_group"
+value_type = "GROUPS"
+value = ".*"
+claim_type = "RESOURCE"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+group_filter_type = "REGEX"
+}
+resource "okta_auth_server_claim" "eaattributeoclph8yhjqw2Wslig0h7" {
+name = "ea_attribute"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "user.ea_attribute"
+claim_type = "RESOURCE"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_claim" "developerroleoclppp7muwa6noi890h7" {
+name = "developer_role"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "user.developerrole"
+claim_type = "RESOURCE"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_claim" "organizationoclq46rmov31pTgf10h7" {
+name = "organization"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "user.organization"
+claim_type = "IDENTITY"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_policy" "ForAll00pmehdu9f051qxTo0h7" {
+status = "ACTIVE"
+name = "For All"
+description = "for all"
+priority = 1
+client_whitelist = ["ALL_CLIENTS"]
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_scope" "adminscpns754aaer6PQDA0h7" {
+consent = "REQUIRED"
+name = "admin"
+description = "admin"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_scope" "credsscpmkne7f3t8uEKtk0h7" {
+consent = "IMPLICIT"
+name = "creds"
+description = "client creds"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_scope" "leveradminscpppp7mqsih6a6u60h7" {
+consent = "IMPLICIT"
+name = "lever-admin"
+description = null
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_scope" "readallapiscpnybzac4ZzKKITz0h7" {
+consent = "IMPLICIT"
+name = "read-all-api"
+description = null
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_scope" "serviceonereadscppkyo19zu84Mmoy0h7" {
+consent = "IMPLICIT"
+name = "serviceone.read"
+description = "read access for your service"
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server_scope" "starbucksscopescpn488mz7FBsrSP90h7" {
+consent = "IMPLICIT"
+name = "starbucks-scope"
+description = null
+auth_server_id = "${okta_auth_server.bankingapiauslsufk8uOMda6v60h7.id}"
+}
+resource "okta_auth_server" "forteioauskkfitx0l6SNY6R0h7" {
+audiences = ["http://localhost:3000"]
+description = null
+name = "forte.io"
+}
+resource "okta_auth_server_claim" "yourFirstNameoclklhjdg1w99OnCp0h7" {
+name = "yourFirstName"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "user.firstName"
+claim_type = "IDENTITY"
+auth_server_id = "${okta_auth_server.forteioauskkfitx0l6SNY6R0h7.id}"
+}
+resource "okta_auth_server_claim" "yourLastNameoclklhjyvj14aBR550h7" {
+name = "yourLastName"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "user.lastName"
+claim_type = "IDENTITY"
+auth_server_id = "${okta_auth_server.forteioauskkfitx0l6SNY6R0h7.id}"
+}
+resource "okta_auth_server_claim" "deviceTypeoclklhr367HECzWHq0h7" {
+name = "deviceType"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "user.deviceType"
+claim_type = "IDENTITY"
+auth_server_id = "${okta_auth_server.forteioauskkfitx0l6SNY6R0h7.id}"
+}
+resource "okta_auth_server_claim" "phoneDigitsoclklhr6g7XtDntc40h7" {
+name = "phoneDigits"
+status = "ACTIVE"
+value_type = "EXPRESSION"
+value = "user.mobilePhone"
+claim_type = "IDENTITY"
+auth_server_id = "${okta_auth_server.forteioauskkfitx0l6SNY6R0h7.id}"
+}
+resource "okta_auth_server_claim" "groupsoclkwexfnwgW3TeIZ0h7" {
+status = "ACTIVE"
+name = "groups"
+value_type = "GROUPS"
+value = ".*"
+claim_type = "IDENTITY"
+auth_server_id = "${okta_auth_server.forteioauskkfitx0l6SNY6R0h7.id}"
+group_filter_type = "REGEX"
+}
+resource "okta_auth_server_policy" "all00pkkfi28xQuwrC9D0h7" {
+status = "ACTIVE"
+name = "all"
+description = "all folks"
+priority = 1
+client_whitelist = ["ALL_CLIENTS"]
+auth_server_id = "${okta_auth_server.forteioauskkfitx0l6SNY6R0h7.id}"
+}
