@@ -704,21 +704,9 @@ const init = async () => {
       var serverAddress = tfId(migratedServer)
       var serverId = defaultServer.id
       var fullModel = new ModelCreator({ type: "authorizationServers", resource: migratedServer});
-      var finalForm = fullModel.model.finalForm;
+      var finalForm = fullModel.model.finalForm  + "\n"
       defaultObject = { "type": "okta_auth_server", tf: finalForm, id: serverId, address: serverAddress }
-    } else {
-      var migratedPolicy = req.body.resource
-      console.log(url + "api/v1/policies?type=OKTA_SIGN_ON")
-      var getDefaultPolicy = await axios.get(url + "/api/v1/policies?type=OKTA_SIGN_ON", { headers: headers })
-      console.log(getDefaultPolicy.data)
-      var defaultPolicy = getDefaultPolicy.data.find(policy => policy.system)
-      console.log(defaultPolicy)
-      var policyAddress = tfId(migratedPolicy)
-      var polciyId = defaultPolicy.id
-      var fullModel = new ModelCreator({ type: "OKTA_SIGN_ON", resource: migratedPolicy });
-      var finalForm = fullModel.model.finalForm;
-      defaultObject = { "type": "okta_policy_signon", tf: finalForm, id: polciyId, address: policyAddress }
-    }
+    } 
 
     var file = supportpath + foldername + "/default.tf"
     //if (!fs.existsSync(file)) {
@@ -738,17 +726,38 @@ const init = async () => {
         })
 
         console.log(fullAddress)
-        var util = require('util'),
-          exec = require('child_process').exec;
-        exec(`terraform init && terraform import ${fullAddress} ${defaultObject.id}`, {
+        const { spawn } = require('child_process');
+        const child = spawn(`terraform init && terraform import ${fullAddress} ${defaultObject.id}`, {
+          stdio: 'inherit',
+          shell: true,
           cwd: supportpath + foldername
-        }, function (error, stdout, stderr) {
-          // work with result
-          console.log(error);
-          console.log(stdout);
-          console.log(stderr);
-          //res.send({ "message": stdout })
         });
+
+        child.on('exit', function (code, signal) {
+          console.log('child process exited with ' +
+                      `code ${code} and signal ${signal}`);
+        });
+
+        child.stdout.on('data', (data) => {
+          console.log(`child stdout:\n${data}`);
+        });
+        
+        child.stderr.on('data', (data) => {
+          console.error(`child stderr:\n${data}`);
+        });
+        // var util = require('util'),
+
+        //   exec = require('child_process').exec;
+        // exec(`terraform init && terraform import ${fullAddress} ${defaultObject.id}`, {
+        //   cwd: supportpath + foldername
+        // }, function (error, stdout, stderr) {
+        //   // work with result
+        //   console.log(error);
+        //   console.log(stdout);
+        //   console.log(stderr);
+        //   //res.send({ "message": stdout })
+        
+        // });
       }
     //}
   })
