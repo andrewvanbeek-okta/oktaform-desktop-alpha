@@ -153,46 +153,29 @@
                 single-line
                 hide-details
               ></v-text-field>
-                            <v-data-table
-    v-model="selected"
-    :headers="headers"
-    :items="desserts"
-    :single-select="singleSelect"
-    item-key="name"
-    show-select
-  >
-  
-    <template v-slot:top>
-      <v-switch v-model="singleSelect" label="Single select" class="pa-3"></v-switch>
-    </template>
-  </v-data-table>
 
               <center></center>
               <vue-tabs>
                 <v-tab v-for="(table, i) in tables" v-if="renderComponent" :title="tables[i].title">
                   <div style="align-items: flex-start;" class="full-table">
                     <h1>{{tables[i].title}}</h1>
-               <v-data-table
-    v-model="selected"
-    :headers="headers"
-    :items="desserts"
-    :single-select="singleSelect"
-    item-key="name"
-    show-select
-    class="elevation-1"
-  >
-    <template v-slot:top>
-      <v-switch v-model="singleSelect" label="Single select" class="pa-3"></v-switch>
-    </template>
-  </v-data-table>
-                      <!-- <v-data-table
+
+                    <v-data-table
                       :headers="tables[i].headers"
                       :items="tables[i].respData"
                       :search="search"
                       :single-select="singleSelect"
                       item-key="name"
                       show-select
-                    ></v-data-table> -->
+                    >
+                      <template v-slot:item.data-table-select="props">
+                        <v-checkbox
+                          :input-value="props.isSelected"
+                          @change="onSelect(props.item, tables[i].title)"
+                        ></v-checkbox>
+                      </template>
+                    </v-data-table>
+
                     <!-- <md-table v-model="tables[i].respData" md-card @md-selected="onSelect">
                       <md-table-toolbar>
                         <h1 class="md-title">With auto select and alternate headers</h1>
@@ -643,6 +626,7 @@ export default {
       this.$modal.show("create_config");
     },
     async sendApiResource(res) {
+      console.log(this.selected);
       var component = this;
       this.resources[res] = this.selected;
       console.log(this.resources[res]);
@@ -739,16 +723,16 @@ export default {
               return {
                 text: oktaResourceKey,
                 value: oktaResourceKey
-              }
-            })
-            console.log(headers)
+              };
+            });
+            console.log(headers);
             var table = {
               title: rez,
               respData: response.data,
               headers: headers
-            }
-            console.log("BELOW IS THE TABLE")
-            console.log(headers)
+            };
+            console.log("BELOW IS THE TABLE");
+            console.log(headers);
             component.tables.push(table);
             component.rezources = response.data;
             component.renderComponent = false;
@@ -761,37 +745,51 @@ export default {
           });
       });
     },
-    async onSelect(items) {
+    async onSelect(item, resource) {
       var component = this;
-      var component = this;
-      var mostRecentItem = items[items.length - 1];
-      var links = Object.keys(mostRecentItem._links)
-        .filter(function(link) {
-          return (
-            link.toString() == "claims" ||
-            link.toString() == "scopes" ||
-            link.toString() == "rules" ||
-            link.toString() == "policies"
-          );
-        })
-        .map(function(filteredlink) {
-          return mostRecentItem._links[filteredlink].href;
-        });
-      var children = await component.getChildrenCollection(links);
-      items[items.length - 1]["children"] = await children;
-      if (
-        items[items.length - 1].name.toUpperCase().includes("DEFAULT") &&
-        items[items.length - 1].system
-      ) {
-        items[items.length - 1].name =
-          "Oktaform:default: " + component.tenantOneName;
-      }
-      if (mostRecentItem.name.toUpperCase().includes("DEFAULT")) {
-        if (mostRecentItem._links.self.href.includes("authorizationServers")) {
-          component.defaultImport(mostRecentItem);
+      console.log(component.selected);
+      if (!component.selected.includes(item)) {
+        component.selected.push(item);
+        var mostRecentItem = item;
+        var links = Object.keys(mostRecentItem._links)
+          .filter(function(link) {
+            return (
+              link.toString() == "claims" ||
+              link.toString() == "scopes" ||
+              link.toString() == "rules" ||
+              link.toString() == "policies"
+            );
+          })
+          .map(function(filteredlink) {
+            return item._links[filteredlink].href;
+          });
+        var children = await component.getChildrenCollection(links);
+        component.selected[component.selected.length - 1][
+          "children"
+        ] = await children;
+        if (
+          component.selected[component.selected.length - 1].name
+            .toUpperCase()
+            .includes("DEFAULT") &&
+          component.selected[component.selected.length - 1].system
+        ) {
+          component.selected[component.selected.length - 1].name =
+            "Oktaform:default: " + component.tenantOneName;
         }
+        if (item.name.toUpperCase().includes("DEFAULT")) {
+          if (item._links.self.href.includes("authorizationServers")) {
+            component.defaultImport(item);
+          }
+        }
+        console.log(component.selected);
+        //component.selected = items;
+        component.sendApiResource(resource);
+      } else {
+         component.selected = component.selected.filter(function(obj) {
+          return obj.id !== item.id;
+        });
+        component.sendApiResource(resource);
       }
-      component.selected = items;
     },
     async defaultImport(item) {
       this.$http.post(`http://localhost:8000/import`, {
@@ -825,7 +823,10 @@ export default {
       });
       return { type: getChild.data.type, children: children };
     },
-    searchOnTable() {
+    searchOnTable(event, item) {
+      console.log("WHATEVER");
+      console.log(event);
+      console.log(item);
       //this.searched = searchByName(this.users, this.search)
     },
     getAlternateLabel(count) {
