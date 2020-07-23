@@ -165,7 +165,7 @@
                       :items="tables[i].respData"
                       :search="search"
                       :single-select="singleSelect"
-                      item-key="name"
+                      :item-key="tables[i].title"
                       show-select
                     >
                       <template v-slot:item.data-table-select="props">
@@ -175,37 +175,11 @@
                         ></v-checkbox>
                       </template>
                     </v-data-table>
-
-                    <!-- <md-table v-model="tables[i].respData" md-card @md-selected="onSelect">
-                      <md-table-toolbar>
-                        <h1 class="md-title">With auto select and alternate headers</h1>
-                      </md-table-toolbar>
-                      <md-table-toolbar slot="md-table-alternate-header" slot-scope="{ count }">
-                        <div class="md-toolbar-section-start">{{ getAlternateLabel(count) }}</div>
-                        <div class="md-toolbar-section-end">
-                          <md-button class="md-icon-button">
-                            <md-icon>delete</md-icon>
-                          </md-button>
-                        </div>
-                      </md-table-toolbar>
-                      <md-table-row
-                        slot-scope="{ item }"
-                        slot="md-table-row"
-                        md-seleted="true"
-                        md-selectable="multiple"
-                        md-auto-select
-                      >
-                        <md-table-cell
-                          v-for="key in Object.keys(item)"
-                          :md-label="key"
-                          md-sort-by="name"
-                        >{{ item[key] }}</md-table-cell>
-                      </md-table-row>
-                    </md-table>-->
-                    <md-button
-                      v-on:click="sendApiResource(tables[i].title)"
-                      class="md-danger"
-                    >Add/Remove {{ tables[i].title }}</md-button>
+                    <md-badge class="md-primary" :md-content="resources[tables[i].title].length">
+                      <v-btn class="ma-0" v-show="true" @click="show()" color="pink" fab dark small absolute bottom right>
+                        <v-icon>mdi-cart</v-icon>
+                      </v-btn>
+                    </md-badge>
                   </div>
                 </v-tab>
               </vue-tabs>
@@ -219,41 +193,21 @@
       <modal name="hello-world" :adaptive="true" :scrollable="true" width="80%" height="auto">
         <div v-for="(table, i) in addedTables" v-if="renderComponent" class="full-table">
           <h3>{{addedTables[i].title}}</h3>
- 
-                  <v-data-table
-                      :headers="addedTables[i].headers"
-                      :items="addedTables[i].respData"
-                      :single-select="singleSelect"
-                      item-key="name"
-                      show-select
-                    >
-                      <template v-slot:item.data-table-select="props">
-                        <v-checkbox
-                          :input-value="props.isSelected"
-                          @change="onSelect(props.item, tables[i].title)"
-                        ></v-checkbox>
-                      </template>
-                    </v-data-table> 
-          <!-- <md-table v-model="addedTables[i].respData" md-card>
-            <md-table-toolbar>
-              <h1 class="md-title">With auto select and alternate headers</h1>
-            </md-table-toolbar>
-            <md-table-toolbar slot="md-table-alternate-header" slot-scope="{ count }">
-              <div class="md-toolbar-section-start">{{ getAlternateLabel(count) }}</div>
-              <div class="md-toolbar-section-end">
-                <md-button class="md-icon-button">
-                  <md-icon>delete</md-icon>
-                </md-button>
-              </div>
-            </md-table-toolbar>
-            <md-table-row slot-scope="{ item }" slot="md-table-row">
-              <md-table-cell
-                v-for="key in Object.keys(item)"
-                :md-label="key"
-                md-sort-by="name"
-              >{{ item[key] }}</md-table-cell>
-            </md-table-row>
-          </md-table> -->
+
+          <v-data-table
+            :headers="addedTables[i].headers"
+            :items="addedTables[i].respData"
+            :single-select="singleSelect"
+            item-key="name"
+            show-select
+          >
+            <template v-slot:item.data-table-select="props">
+              <v-checkbox
+                :input-value="props.isSelected"
+                @change="onSelect(props.item, tables[i].title)"
+              ></v-checkbox>
+            </template>
+          </v-data-table>
         </div>
       </modal>
       <modal name="delete" :adaptive="true" :scrollable="true" width="80%" height="auto">
@@ -532,22 +486,25 @@ export default {
       var component = this;
       this.addedTables = [];
       for (var key in this.resources) {
-        if (this.resources.hasOwnProperty(key) && this.resources[key].length != 0) {
-            var headers = Object.keys(this.resources[key][0]);
-            headers = headers.map(function(oktaResourceKey) {
-              return {
-                text: oktaResourceKey,
-                value: oktaResourceKey
-              };
-            });
-            var table = {
+        if (
+          this.resources.hasOwnProperty(key) &&
+          this.resources[key].length != 0
+        ) {
+          var headers = Object.keys(this.resources[key][0]);
+          headers = headers.map(function(oktaResourceKey) {
+            return {
+              text: oktaResourceKey,
+              value: oktaResourceKey
+            };
+          });
+          var table = {
             title: key,
             respData: this.resources[key],
             headers: headers
-          }
-            console.log("CHECK THIS OUT")
-          console.log(table)
-               console.log("CHECK THIS OUT")
+          };
+          console.log("CHECK THIS OUT");
+          console.log(table);
+          console.log("CHECK THIS OUT");
           component.addedTables.push(table);
         }
       }
@@ -652,17 +609,6 @@ export default {
     showCreateConfig() {
       this.$modal.show("create_config");
     },
-    async sendApiResource(res, item) {
-      // console.log(this.selected);
-      // var component = this;
-      // this.resources[res].push(item)
-      // console.log(this.resources[res]);
-      // if (this.selected.length == 0) {
-      //   delete this.resources[res];
-      // } else {
-        this.show();
-      // }
-    },
     async saveEnvironment() {
       var component = this;
       if (
@@ -738,7 +684,7 @@ export default {
         "trustedOrigins"
       ];
       resources.forEach(function(rez) {
-        component.resources[rez] = []
+        component.resources[rez] = [];
         component.$http
           .post("http://localhost:8000/resource", {
             name: component.tenantOneConfig,
@@ -793,23 +739,24 @@ export default {
         component.resources[resource][component.resources[resource].length - 1][
           "children"
         ] = await children;
-        if (
-          item.name.toUpperCase().includes("DEFAULT") && item.system
-        ) {
-          component.resources[resource][component.resources[resource].length - 1].name =
-            "Oktaform:default: " + component.tenantOneName;
+        if (item.name.toUpperCase().includes("DEFAULT") && item.system) {
+          component.resources[resource][
+            component.resources[resource].length - 1
+          ].name = "Oktaform:default: " + component.tenantOneName;
         }
         if (item.name.toUpperCase().includes("DEFAULT")) {
           if (item._links.self.href.includes("authorizationServers")) {
             component.defaultImport(item);
           }
         }
-        component.sendApiResource(resource);
+        component.show()
       } else {
-         component.resources[resource]= component.resources[resource].filter(function(obj) {
-          return obj.id !== item.id;
-        });
-        component.sendApiResource(resource);
+        component.resources[resource] = component.resources[resource].filter(
+          function(obj) {
+            return obj.id !== item.id;
+          }
+        );
+        component.show()
       }
     },
     async defaultImport(item) {
