@@ -497,3 +497,77 @@ priority = 1
 client_whitelist = ["ALL_CLIENTS"]
 auth_server_id = "${okta_auth_server.forteioauskkfitx0l6SNY6R0h7.id}"
 }
+resource "okta_idp_oidc" "signinwithfacebookidp0oaovs4ugsLTZZGHO0h7" {
+name = "sign in with facebook idp"
+acs_type = "INSTANCE"
+acs_binding = "HTTP-POST"
+authorization_url = "https://signinwithfacebook.okta.com/oauth2/v1/authorize"
+authorization_binding = "HTTP-REDIRECT"
+token_url = "https://signinwithfacebook.okta.com/oauth2/v1/token"
+token_binding = "HTTP-POST"
+user_info_url = "https://signinwithfacebook.okta.com/oauth2/v1/token"
+user_info_binding = "HTTP-REDIRECT"
+jwks_url = "https://signinwithfacebook.okta.com/oauth2/v1/keys"
+jwks_binding = "HTTP-REDIRECT"
+scopes = ["openid"]
+client_id = "0oautc9taQ1FkDWMb356"
+client_secret = "aItIgnlFEoLxtnkm6cn_H3zjcZWerguEwIFbFdUs"
+issuer_url = "https://signinwithfacebook.okta.com"
+username_template = "idpuser.email"
+}
+resource "okta_idp_oidc" "slack0oan9howl5JJLU38n0h7" {
+name = "slack"
+acs_type = "INSTANCE"
+acs_binding = "HTTP-POST"
+authorization_url = "https://test.com"
+authorization_binding = "HTTP-REDIRECT"
+token_url = "https://test.com"
+token_binding = "HTTP-POST"
+user_info_url = "https://test.com"
+user_info_binding = "HTTP-REDIRECT"
+jwks_url = "https://test.com"
+jwks_binding = "HTTP-REDIRECT"
+scopes = ["openid"]
+client_id = "eflkjfioehr3289y9y32yr"
+client_secret = "39r30wu9r8u89ry98ry89ry89r"
+issuer_url = "https://test.com"
+username_template = "idpuser.email"
+}
+
+
+resource "okta_idp_oidc" "signinwithgoolgeokta0oaovsllpqx63xKQ60h7" {
+name = "sign in with goolge okta"
+acs_type = "INSTANCE"
+acs_binding = "HTTP-POST"
+authorization_url = "https://signinwithgoogle.okta.com/oauth2/v1/authorize"
+authorization_binding = "HTTP-REDIRECT"
+token_url = "https://signinwithgoogle.okta.com/oauth2/v1/token"
+token_binding = "HTTP-POST"
+user_info_url = "https://signinwithgoogle.okta.com/oauth2/v1/token"
+user_info_binding = "HTTP-REDIRECT"
+jwks_url = "https://signinwithgoogle.okta.com/oauth2/v1/keys"
+jwks_binding = "HTTP-REDIRECT"
+scopes = ["openid"]
+client_id = "0oafgnmdRTg9FjVNj4x5"
+client_secret = "hBmVAbCkHbW_Rjb3aicOyGwev1TupBU7jASZJqKO"
+issuer_url = "https://signinwithgoogle.okta.com"
+username_template = "idpuser.email"
+}
+resource "okta_idp_oidc" "signinwithmicrosoft0oaovrz4gzopIy9oM0h7" {
+name = "sign in with microsoft"
+acs_type = "INSTANCE"
+acs_binding = "HTTP-POST"
+authorization_url = "https://signinwithmicro.okta.com/oauth2/v1/authorize"
+authorization_binding = "HTTP-REDIRECT"
+token_url = "https://signinwithmicro.okta.com/oauth2/v1/token"
+token_binding = "HTTP-POST"
+user_info_url = "https://signinwithmicro.okta.com/oauth2/v1/token"
+user_info_binding = "HTTP-REDIRECT"
+jwks_url = "https://signinwithmicro.okta.com/oauth2/v1/keys"
+jwks_binding = "HTTP-REDIRECT"
+scopes = ["openid"]
+client_id = "0oafj7t1NhBJTJKBB4x5"
+client_secret = "tvhAgo3BPPoP62x9ULD2kmLai26KeRCMHTma4T2f"
+issuer_url = "https://signinwithmicro.okta.com"
+username_template = "idpuser.email"
+}

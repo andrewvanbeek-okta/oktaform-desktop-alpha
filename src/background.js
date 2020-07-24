@@ -478,7 +478,12 @@ const init = async () => {
             console.log(error);
             console.log(stdout);
             console.log(stderr);
-            res.send({ message: stdout })
+            if(stdout) {
+              res.send({ message: stdout })
+            } else {
+              res.send({ message: stderr })
+            }
+     
           });
 
           //res.download(supportpath + foldername + "/" + filename + ".tf");
@@ -698,6 +703,7 @@ const init = async () => {
 
         child.stdout.on('data', (data) => {
           console.log(`child stdout:\n${data}`);
+          res.send({message: data})
         });
         
         child.stderr.on('data', (data) => {

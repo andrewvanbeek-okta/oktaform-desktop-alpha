@@ -170,13 +170,24 @@
                     >
                       <template v-slot:item.data-table-select="props">
                         <v-checkbox
-                          :input-value="props.isSelected"
+                          :input-value="resources[tables[i].title].includes(props.item)"
                           @change="onSelect(props.item, tables[i].title)"
                         ></v-checkbox>
                       </template>
                     </v-data-table>
                     <md-badge class="md-primary" :md-content="resources[tables[i].title].length">
-                      <v-btn class="ma-0" v-show="true" @click="show()" color="pink" fab dark small absolute bottom right>
+                      <v-btn
+                        class="ma-0"
+                        v-show="true"
+                        @click="show()"
+                        color="pink"
+                        fab
+                        dark
+                        small
+                        absolute
+                        bottom
+                        right
+                      >
                         <v-icon>mdi-cart</v-icon>
                       </v-btn>
                     </md-badge>
@@ -197,15 +208,12 @@
           <v-data-table
             :headers="addedTables[i].headers"
             :items="addedTables[i].respData"
-            :single-select="singleSelect"
+            :single-select="true"
             item-key="name"
             show-select
           >
             <template v-slot:item.data-table-select="props">
-              <v-checkbox
-                :input-value="props.isSelected"
-                @change="onSelect(props.item, tables[i].title)"
-              ></v-checkbox>
+              <v-icon small @click="deleteItem(props.item, addedTables[i].title)">mdi-delete</v-icon>
             </template>
           </v-data-table>
         </div>
@@ -254,40 +262,19 @@
           </md-table>
         </div>
       </modal>
-      <modal name="response" :adaptive="true" :scrollable="true" width="80%" height="30%">
-        <!-- <md-content class="md-primary allow-scroll">
-          <nav-tabs-card class="md-danger" no-label>
-            <template slot="content">
-              <md-tabs md-sync-route class="md-danger" md-alignment="left">
-        <md-tab id="tab-home" md-label="Response" md-icon="message">-->
-        <!-- //<div v-model="serverResponse">{{serverResponse}}</div> -->
-        <!-- </md-tab>
-              </md-tabs>
-            </template>
-          </nav-tabs-card>
-        </md-content>-->
-      </modal>
-      <v-dialog maxHeight="200px" scrollable="true" />
-      <modal name v-if="classicModal" @close="classicModalHide">
-        <template slot="header">
-          <h4 class="modal-title">Modal Title</h4>
-          <md-button
-            class="md-simple md-just-icon md-round modal-default-button"
-            @click="classicModalHide"
-          >
-            <md-icon>clear</md-icon>
-          </md-button>
-        </template>
-
-        <template slot="body">
-          <div v-model="serverResponse">{{serverResponse}}</div>
-        </template>
-
-        <template slot="footer">
-          <md-button class="md-simple">Nice Button</md-button>
-          <md-button class="md-danger md-simple" @click="classicModalHide">Close</md-button>
-        </template>
-      </modal>
+      <v-dialog v-model="dialog" width="600px">
+        <v-card>
+          <v-card-title>
+            <span class="headline">Response</span>
+          </v-card-title>
+          <v-card-text>{{serverResponse}}</v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="green darken-1" text @click="dialog = false">Disagree</v-btn>
+            <v-btn color="green darken-1" text @click="dialog = false">Agree</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
       <modal name="spinner" :adaptive="true" :scrollable="true" width="50%" height="auto">
         <center>
           <h3>Hold tight</h3>
@@ -392,6 +379,7 @@ export default {
       singleSelect: false,
       search: "",
       policies: [],
+      dialog: false,
       badUrl: false,
       folders: [],
       tenantOneConfig: "",
@@ -425,30 +413,7 @@ export default {
       addedTables: [],
       render: false,
       files: [{ name: "test" }],
-      rezources: [],
-      headers: [
-        {
-          text: "Dessert (100g serving)",
-          align: "start",
-          sortable: false,
-          value: "name"
-        },
-        { text: "Calories", value: "calories" },
-        { text: "Fat (g)", value: "fat" },
-        { text: "Carbs (g)", value: "carbs" },
-        { text: "Protein (g)", value: "protein" },
-        { text: "Iron (%)", value: "iron" }
-      ],
-      desserts: [
-        {
-          name: "Frozen Yogurt",
-          calories: 159,
-          fat: 6.0,
-          carbs: 24,
-          protein: 4.0,
-          iron: "1%"
-        }
-      ]
+      rezources: []
     };
   },
   methods: {
@@ -543,6 +508,16 @@ export default {
       console.log("TESTSTS");
       console.log(item);
     },
+    async deleteItem(item, resource){
+      var component = this
+      component.resources[resource] = component.resources[resource].filter(
+          function(obj) {
+            return obj.id !== item.id;
+          }
+        );
+      console.log(item)
+      component.show();
+    },
     sendSelected() {
       var component = this;
       component.spinning(true);
@@ -559,6 +534,7 @@ export default {
           console.log(response.data);
           //let blob = new Blob([response.data], { type: 'application/tf' }),
           component.spinning(false);
+          console.log("here");
           component.showResponse(response.data);
           //component.resetPage()
         })
@@ -587,24 +563,8 @@ export default {
     },
     showResponse(response) {
       var component = this;
-      this.serverResponse = response;
-      //this.classicModal = true
-      this.$modal.show("dialog", {
-        title: "Response",
-        text: response.message
-          .replace(/(\r\n|\n|\r)/gm, "")
-          .trim()
-          .split(" to do so if necessary.")[1],
-        buttons: [
-          {
-            title: "Close",
-            handler: () => {
-              this.$modal.hide("dialog");
-              component.resetPage();
-            }
-          }
-        ]
-      });
+      this.serverResponse = response.message;
+      this.dialog = true;
     },
     showCreateConfig() {
       this.$modal.show("create_config");
@@ -679,7 +639,6 @@ export default {
         "authorizationServers",
         "apps",
         "policies?type=OKTA_SIGN_ON",
-        "idps?type=SAML2",
         "idps?type=OIDC",
         "trustedOrigins"
       ];
@@ -749,14 +708,9 @@ export default {
             component.defaultImport(item);
           }
         }
-        component.show()
+        component.show();
       } else {
-        component.resources[resource] = component.resources[resource].filter(
-          function(obj) {
-            return obj.id !== item.id;
-          }
-        );
-        component.show()
+        component.deleteItem(item, resource)
       }
     },
     async defaultImport(item) {
@@ -896,6 +850,10 @@ div.md-card-header.md-danger {
   padding: 15px;
   font-size: 14px;
   height: 10em;
+}
+
+.v-dialog__container {
+  display: unset;
 }
 </style>
 

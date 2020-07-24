@@ -29,7 +29,7 @@ Vue.prototype.$http = axios
 
 Vue.use(MaterialKit);
 Vue.use(VueMaterial)
-Vue.use(VModal, { dialog: true })
+Vue.use(VModal, { dialog: false })
 const NavbarStore = {
   showNavbar: false
 };
