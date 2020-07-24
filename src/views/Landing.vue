@@ -146,25 +146,34 @@
                   <md-button v-on:click="pullResources()" class="md-danger">Get Okta Config</md-button>
                 </div>
               </div>
-              <v-text-field
+              <!-- <v-text-field
                 v-model="search"
                 append-icon="search"
                 label="Search"
                 single-line
                 hide-details
-              ></v-text-field>
+              ></v-text-field>-->
 
               <center></center>
               <vue-tabs>
                 <v-tab v-for="(table, i) in tables" v-if="renderComponent" :title="tables[i].title">
                   <div style="align-items: flex-start;" class="full-table">
                     <h1>{{tables[i].title}}</h1>
+                    <br />
+                    <br />
+                    <v-text-field
+                      v-model="search"
+                      append-icon="search"
+                      label="Search"
+                      single-line
+                      hide-details
+                    ></v-text-field>
 
                     <v-data-table
                       :headers="tables[i].headers"
                       :items="tables[i].respData"
                       :search="search"
-                      :single-select="singleSelect"
+                      :single-select="true"
                       :item-key="tables[i].title"
                       show-select
                     >
@@ -199,8 +208,6 @@
         </div>
       </div>
       <md-button v-on:click="sendSelected()" class="md-danger">Generate</md-button>
-      <md-button v-on:click="show()" class="md-danger">show</md-button>
-      <md-button v-on:click="showDelete()" class="md-danger">delete</md-button>
       <modal name="hello-world" :adaptive="true" :scrollable="true" width="80%" height="auto">
         <div v-for="(table, i) in addedTables" v-if="renderComponent" class="full-table">
           <h3>{{addedTables[i].title}}</h3>
@@ -213,7 +220,14 @@
             show-select
           >
             <template v-slot:item.data-table-select="props">
-              <v-icon small @click="deleteItem(props.item, addedTables[i].title)">mdi-delete</v-icon>
+              <v-icon
+                small
+                @click="deleteItem(props.item, addedTables[i].title)"
+              >mdi-arrow-left-bold-hexagon-outline</v-icon>
+              <v-icon
+                small
+                @click="appendToName(props.item, addedTables[i].title)"
+              >mdi-format-annotation-plus</v-icon>
             </template>
           </v-data-table>
         </div>
@@ -508,14 +522,14 @@ export default {
       console.log("TESTSTS");
       console.log(item);
     },
-    async deleteItem(item, resource){
-      var component = this
+    async deleteItem(item, resource) {
+      var component = this;
       component.resources[resource] = component.resources[resource].filter(
-          function(obj) {
-            return obj.id !== item.id;
-          }
-        );
-      console.log(item)
+        function(obj) {
+          return obj.id !== item.id;
+        }
+      );
+      console.log(item);
       component.show();
     },
     sendSelected() {
@@ -532,11 +546,9 @@ export default {
         })
         .then(response => {
           console.log(response.data);
-          //let blob = new Blob([response.data], { type: 'application/tf' }),
           component.spinning(false);
           console.log("here");
           component.showResponse(response.data);
-          //component.resetPage()
         })
         .catch(e => {
           console.log(e);
@@ -565,6 +577,17 @@ export default {
       var component = this;
       this.serverResponse = response.message;
       this.dialog = true;
+    },
+    appendToName(item, resource) {
+      var component = this;
+      if (!item.name.includes(" from oktaform")) {
+        item.name = item.name + " from oktaform";
+      } else {
+        item.name = item.name.split(" from oktaform")[0];
+      }
+      component.deleteItem(item, resource);
+      component.resources[resource].push(item);
+      component.show();
     },
     showCreateConfig() {
       this.$modal.show("create_config");
@@ -710,7 +733,7 @@ export default {
         }
         component.show();
       } else {
-        component.deleteItem(item, resource)
+        component.deleteItem(item, resource);
       }
     },
     async defaultImport(item) {

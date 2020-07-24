@@ -11,6 +11,7 @@
     "dev": "NODE_ENV=DEV vue-cli-service serve & sleep 5 && NODE_ENV=DEV electron app.js",
     "electron:build": "vue-cli-service electron:build",
     "electron:serve": "vue-cli-service electron:serve",
+    "electron:generate-icons": "electron-icon-builder --input=./public/icon.png --output=build --flatten",
     "install:clean": "rm -rf node_modules/ && rm -rf package-lock.json && npm install && npm run dev",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps",
@@ -67,6 +68,7 @@
     "@vue/eslint-config-prettier": "4.0.1",
     "electron": "^9.0.0",
     "electron-devtools-installer": "^3.1.0",
+    "electron-icon-builder": "^1.0.2",
     "sass-loader": "7.1.0",
     "vue-cli-plugin-electron-builder": "^2.0.0-rc.4",
     "vue-template-compiler": "2.6.10"
