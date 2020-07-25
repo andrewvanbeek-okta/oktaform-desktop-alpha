@@ -4,3 +4,9 @@ description = "Default Authorization Server for your Applications"
 name = "default"
 }
 
+resource "okta_auth_server" "newdefaultserverausjztrgdgQqvCshE0h7" {
+audiences = ["localhost:8080"]
+description = null
+name = "new default server"
+}
+

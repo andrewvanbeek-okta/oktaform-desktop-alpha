@@ -1,6 +1,6 @@
 {
-  "name": "oktaform",
-  "version": "1.2.0",
+  "name": "oktaform-desktop",
+  "version": "1.2.3",
   "private": true,
   "description": "Vue Material Kit",
   "author": "Creative Tim https://www.creative-tim.com/",
@@ -31,6 +31,7 @@
     "electron": "^9.0.5",
     "epic-spinners": "^1.1.0",
     "express": "^4.17.1",
+    "fix-path": "^3.0.0",
     "glob": "^7.1.6",
     "hcl-to-json": "^0.1.1",
     "jquery": "^3.4.1",
