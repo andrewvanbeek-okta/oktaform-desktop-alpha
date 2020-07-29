@@ -183,6 +183,7 @@
                           @change="onSelect(props.item, tables[i].title)"
                         ></v-checkbox>
                       </template>
+                       <template #item.profile_name="{ item }"><span v-if="item.profile">{{item.profile.name}}</span><span v-else>Not Applicable</span></template>
                     </v-data-table>
                     <md-badge class="md-primary" :md-content="resources[tables[i].title].length">
                       <v-btn
@@ -611,6 +612,7 @@ export default {
         console.log(saveEnv);
         if (saveEnv.data.message === "saved!") {
           component.getEnvironments();
+          component.resetPage()
         }
       } else {
         if (component.environmentUrl == "") {
@@ -673,7 +675,13 @@ export default {
             resource: rez
           })
           .then(function(response) {
-            var headers = Object.keys(response.data[0]);
+            var objectBase = Object.keys(response.data[0])
+            if(objectBase.includes("profile") && !objectBase.includes("name")) {
+              console.log("HERE in the SPLICER")
+              objectBase.splice(2, 0, "profile_name")
+            }
+            console.log(objectBase)
+            var headers = objectBase
             headers = headers.map(function(oktaResourceKey) {
               return {
                 text: oktaResourceKey,
