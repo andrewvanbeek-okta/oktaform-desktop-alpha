@@ -603,8 +603,8 @@ export default {
         var saveEnv = await component.$http.post(
           "http://localhost:8000/environment",
           {
-            url: component.environmentUrl,
-            apiToken: component.environmentToken,
+            url: component.environmentUrl.trim(),
+            apiToken: component.environmentToken.trim(),
             name: component.environmentName
           }
         );
