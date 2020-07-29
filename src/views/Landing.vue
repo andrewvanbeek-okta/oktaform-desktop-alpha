@@ -284,8 +284,7 @@
           <v-card-text>{{serverResponse}}</v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="green darken-1" text @click="dialog = false">Disagree</v-btn>
-            <v-btn color="green darken-1" text @click="dialog = false">Agree</v-btn>
+            <v-btn color="green darken-1" text @click="resetPage()">Close</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -321,7 +320,7 @@
                 <md-field class="md-form-group" slot="inputs">
                   <md-icon>lock_outline</md-icon>
                   <label>Api Token</label>
-                  <md-input v-on:change="checkIfEmpty(environmentToken)" v-model="environmentToken"></md-input>
+                  <md-input type="password" v-on:change="checkIfEmpty(environmentToken)" v-model="environmentToken"></md-input>
                   <span v-if="emptyTokenField" class="md-danger" style="color: red;">Cannot be empty</span>
                 </md-field>
                 <md-button
@@ -495,6 +494,7 @@ export default {
       this.$modal.show("configure");
     },
     async resetPage() {
+      this.dialog = false
       console.log(this.$router);
       window.location.reload();
     },
