@@ -197,7 +197,7 @@ const init = async () => {
 
   class AuthScope {
     constructor(scope) {
-      this.consent = scope.consent;
+      this.consent = scope.consent || "IMPLICIT"
       this.name = scope.name;
       this.description = scope.description;
       this.auth_server_id = "${okta_auth_server." + scope.parentid + ".id}";

@@ -658,6 +658,8 @@ export default {
         .split("oktaform_env_")[1]
         .split(".json")[0];
       var component = this;
+      component.tables = []
+      component.resources = []
       const baseURI = "";
       var resources = [
         "groups",
