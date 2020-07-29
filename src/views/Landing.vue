@@ -659,7 +659,7 @@ export default {
         .split(".json")[0];
       var component = this;
       component.tables = []
-      component.resources = []
+      //component.resources = []
       const baseURI = "";
       var resources = [
         "groups",

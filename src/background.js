@@ -125,6 +125,16 @@ const init = async () => {
     return header
   }
 
+  var addArray = function(items) {
+    var list = []
+    list.push.apply(list, items)
+    return list
+  }
+
+  var filterList = function(items, filter) {
+   return items.map(function(item) { return item[filter] })
+  }
+
   class OauthApp {
     constructor(app) {
       this.label = app.label;
@@ -281,6 +291,21 @@ const init = async () => {
     }
   }
 
+  class TrustedOrigin {
+    constructor(origin) {
+      this.name   = origin.name
+      this.origin = origin.origin
+      this.scopes = addArray(filterList(origin.scopes, "type"))
+      this.finalForm = tfGenerate(
+        this,
+        origin,
+        "okta_trusted_origin",
+        Object.keys(this)
+      )
+      this.terraformId = tfId(origin)
+    }
+  }
+
   class ModelCreator {
     constructor(json) {
       this.modelType = json.type;
@@ -314,6 +339,9 @@ const init = async () => {
               break;
             case "claims":
               return new AuthClaim(this.modelJson);
+              break;
+            case "trustedOrigins":
+              return new TrustedOrigin(this.modelJson);
               break;
             case "scopes":
               return new AuthScope(this.modelJson);
