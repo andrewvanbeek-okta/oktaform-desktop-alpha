@@ -183,7 +183,10 @@
                           @change="onSelect(props.item, tables[i].title)"
                         ></v-checkbox>
                       </template>
-                       <template #item.profile_name="{ item }"><span v-if="item.profile">{{item.profile.name}}</span><span v-else>Not Applicable</span></template>
+                      <template #item.profile_name="{ item }">
+                        <span v-if="item.profile">{{item.profile.name}}</span>
+                        <span v-else>Not Applicable</span>
+                      </template>
                     </v-data-table>
                     <md-badge class="md-primary" :md-content="resources[tables[i].title].length">
                       <v-btn
@@ -321,7 +324,11 @@
                 <md-field class="md-form-group" slot="inputs">
                   <md-icon>lock_outline</md-icon>
                   <label>Api Token</label>
-                  <md-input type="password" v-on:change="checkIfEmpty(environmentToken)" v-model="environmentToken"></md-input>
+                  <md-input
+                    type="password"
+                    v-on:change="checkIfEmpty(environmentToken)"
+                    v-model="environmentToken"
+                  ></md-input>
                   <span v-if="emptyTokenField" class="md-danger" style="color: red;">Cannot be empty</span>
                 </md-field>
                 <md-button
@@ -350,33 +357,42 @@ import FileDownload from "js-file-download";
 import Loading from "vue-loading-overlay";
 import { LoginCard } from "@/components";
 
-const searchByName = (items, term) => {
-  if (term) {
-    return items.filter(item => toLower(item.name).includes(toLower(term)));
+function getSafe(fn, defaultVal) {
+  try {
+    return fn();
+  } catch (e) {
+    return defaultVal;
   }
+}
 
-  return items;
-};
+  var tfId = function (fullObject) {
+    var name = fullObject.name || fullObject.profile.name
+    name = name.replace(/[^a-zA-Z ]/g, "")
+    console.log(name)
+    console.log(fullObject)
+    var header = name.replace(/\s+/g, '') + fullObject.id
+    return header
+  }
 
 export default {
   bodyClass: "landing-page",
   props: {
     header: {
       type: String,
-      default: require("@/assets/img/bg7.jpg")
+      default: require("@/assets/img/bg7.jpg"),
     },
     teamImg1: {
       type: String,
-      default: require("@/assets/img/faces/avatar.jpg")
+      default: require("@/assets/img/faces/avatar.jpg"),
     },
     teamImg2: {
       type: String,
-      default: require("@/assets/img/faces/christian.jpg")
+      default: require("@/assets/img/faces/christian.jpg"),
     },
     teamImg3: {
       type: String,
-      default: require("@/assets/img/faces/kendall.jpg")
-    }
+      default: require("@/assets/img/faces/kendall.jpg"),
+    },
   },
   components: {
     AtomSpinner,
@@ -384,7 +400,7 @@ export default {
     Spinner,
     VTab,
     LoginCard,
-    NavTabsCard
+    NavTabsCard,
   },
   data() {
     return {
@@ -427,7 +443,7 @@ export default {
       addedTables: [],
       render: false,
       files: [{ name: "test" }],
-      rezources: []
+      rezources: [],
     };
   },
   methods: {
@@ -470,16 +486,16 @@ export default {
           this.resources[key].length != 0
         ) {
           var headers = Object.keys(this.resources[key][0]);
-          headers = headers.map(function(oktaResourceKey) {
+          headers = headers.map(function (oktaResourceKey) {
             return {
               text: oktaResourceKey,
-              value: oktaResourceKey
+              value: oktaResourceKey,
             };
           });
           var table = {
             title: key,
             respData: this.resources[key],
-            headers: headers
+            headers: headers,
           };
           console.log("CHECK THIS OUT");
           console.log(table);
@@ -495,13 +511,13 @@ export default {
       this.$modal.show("configure");
     },
     async resetPage() {
-      this.dialog = false
+      this.dialog = false;
       console.log(this.$router);
       window.location.reload();
     },
     async showDelete() {
       var component = this;
-      component.folders = component.environments.map(function(file) {
+      component.folders = component.environments.map(function (file) {
         return { name: file.name.split(".json")[0], timestamp: file.timestamp };
       });
       this.$modal.show("delete");
@@ -526,7 +542,7 @@ export default {
     async deleteItem(item, resource) {
       var component = this;
       component.resources[resource] = component.resources[resource].filter(
-        function(obj) {
+        function (obj) {
           return obj.id !== item.id;
         }
       );
@@ -543,15 +559,15 @@ export default {
           resources: component.resources,
           items: allItems,
           filename: component.filename,
-          foldername: component.tenantTwoConfig.split(".json")[0]
+          foldername: component.tenantTwoConfig.split(".json")[0],
         })
-        .then(response => {
+        .then((response) => {
           console.log(response.data);
           component.spinning(false);
           console.log("here");
           component.showResponse(response.data);
         })
-        .catch(e => {
+        .catch((e) => {
           console.log(e);
         });
     },
@@ -565,10 +581,10 @@ export default {
             "&path=" +
             file.folder
         )
-        .then(response => {
+        .then((response) => {
           component.$http
             .get("http://localhost:8000/apply?path=" + file.folder)
-            .then(response => {
+            .then((response) => {
               component.showResponse(response.data);
               component.spinning(false);
             });
@@ -606,13 +622,13 @@ export default {
           {
             url: component.environmentUrl.trim(),
             apiToken: component.environmentToken.trim(),
-            name: component.environmentName
+            name: component.environmentName,
           }
         );
         console.log(saveEnv);
         if (saveEnv.data.message === "saved!") {
           component.getEnvironments();
-          component.resetPage()
+          component.resetPage();
         }
       } else {
         if (component.environmentUrl == "") {
@@ -635,7 +651,7 @@ export default {
       component.environments = getEnvs.data.files;
     },
     async findEnvironment(name) {
-      var environment = await this.environments.find(function(
+      var environment = await this.environments.find(function (
         environment_config
       ) {
         return environment_config.name === name;
@@ -658,42 +674,46 @@ export default {
         .split("oktaform_env_")[1]
         .split(".json")[0];
       var component = this;
-      component.tables = []
+      component.tables = [];
       //component.resources = []
       const baseURI = "";
       var resources = [
         "groups",
+        "groups/rules",
         "authorizationServers",
         "apps",
         "policies?type=OKTA_SIGN_ON",
         "idps?type=OIDC",
-        "trustedOrigins"
+        "trustedOrigins",
       ];
-      resources.forEach(function(rez) {
+      resources.forEach(function (rez) {
         component.resources[rez] = [];
         component.$http
           .post("http://localhost:8000/resource", {
             name: component.tenantOneConfig,
-            resource: rez
+            resource: rez,
           })
-          .then(function(response) {
-            var objectBase = Object.keys(response.data[0])
-            if(objectBase.includes("profile") && !objectBase.includes("name")) {
-              console.log("HERE in the SPLICER")
-              objectBase.splice(2, 0, "profile_name")
+          .then(function (response) {
+            var objectBase = Object.keys(response.data[0]);
+            if (
+              objectBase.includes("profile") &&
+              !objectBase.includes("name")
+            ) {
+              console.log("HERE in the SPLICER");
+              objectBase.splice(2, 0, "profile_name");
             }
-            console.log(objectBase)
-            var headers = objectBase
-            headers = headers.map(function(oktaResourceKey) {
+            console.log(objectBase);
+            var headers = objectBase;
+            headers = headers.map(function (oktaResourceKey) {
               return {
                 text: oktaResourceKey,
-                value: oktaResourceKey
+                value: oktaResourceKey,
               };
             });
             var table = {
               title: rez,
               respData: response.data,
-              headers: headers
+              headers: headers,
             };
             console.log("BELOW IS THE TABLE");
             console.log(headers);
@@ -704,7 +724,7 @@ export default {
               component.renderComponent = true;
             });
           })
-          .catch(function(error) {
+          .catch(function (error) {
             console.log(error);
           });
       });
@@ -715,22 +735,25 @@ export default {
       if (!component.resources[resource].includes(item)) {
         component.resources[resource].push(item);
         var mostRecentItem = item;
-        var links = Object.keys(mostRecentItem._links)
-          .filter(function(link) {
-            return (
-              link.toString() == "claims" ||
-              link.toString() == "scopes" ||
-              link.toString() == "rules" ||
-              link.toString() == "policies"
-            );
-          })
-          .map(function(filteredlink) {
-            return item._links[filteredlink].href;
-          });
-        var children = await component.getChildrenCollection(links);
-        component.resources[resource][component.resources[resource].length - 1][
-          "children"
-        ] = await children;
+        if (mostRecentItem._links) {
+          var links = Object.keys(mostRecentItem._links)
+            .filter(function (link) {
+              return (
+                link.toString() == "claims" ||
+                link.toString() == "scopes" ||
+                link.toString() == "rules" ||
+                link.toString() == "policies"
+              );
+            })
+            .map(function (filteredlink) {
+              return item._links[filteredlink].href;
+            });
+          var children = await component.getChildrenCollection(links);
+          component.resources[resource][
+            component.resources[resource].length - 1
+          ]["children"] = await children;
+        }
+
         if (item.name.toUpperCase().includes("DEFAULT") && item.system) {
           component.resources[resource][
             component.resources[resource].length - 1
@@ -741,6 +764,9 @@ export default {
             component.defaultImport(item);
           }
         }
+        if (item.actions || item.conditions) {
+          component.findIncludes(item);
+        }
         component.show();
       } else {
         component.deleteItem(item, resource);
@@ -750,13 +776,43 @@ export default {
       this.$http.post(`http://localhost:8000/import`, {
         name: this.tenantTwoConfig,
         resource: item,
-        type: item._links.self.href.split("v1/")[1].split("/")[0]
+        type: item._links.self.href.split("v1/")[1].split("/")[0],
       });
+    },
+    async findIncludes(item) {
+      var itemType = {
+        actions: await getSafe(() => item.actions.assignUserToGroups.groupIds),
+        conditions: await getSafe(() => item.conditions.people.groups.include),
+      };
+      var groupsToAdd = [];
+      if (item["actions"]) {
+        groupsToAdd = itemType["actions"];
+      } else if (item["conditions"]) {
+        groupsToAdd = itemType["conditions"];
+      }
+      console.log(groupsToAdd);
+      console.log(this.tables);
+      var groups = await this.tables.find(function (resource) {
+        return resource.title === "groups";
+      });
+      console.log("#####");
+      console.log(groups);
+      console.log("#####");
+      item.groups = groups.respData.filter(function (resource) {
+        console.log(groupsToAdd.includes(resource.id));
+        return groupsToAdd.includes(resource.id);
+      });
+      item.groupIds = item.groups.map(function(item) {
+        return "${okta_group." + tfId(item) + ".id}"
+      })
+      console.log(item.groups);
+      console.log(item.groupIds)
+      return groupsToAdd;
     },
     async getChildrenCollection(links) {
       var component = this;
       links = Promise.all(
-        links.map(async function(link) {
+        links.map(async function (link) {
           var child = await component.getChildrenModels(link);
           var type = child.type || link.split("/")[link.split("/").length - 1];
           return { type: type, childObjects: child.children };
@@ -773,7 +829,7 @@ export default {
           component.tenantOneConfig
       );
       console.log(getChild.data);
-      var children = getChild.data.children.filter(function(childResource) {
+      var children = getChild.data.children.filter(function (childResource) {
         return !childResource.system;
       });
       return { type: getChild.data.type, children: children };
@@ -786,7 +842,7 @@ export default {
       }
 
       return `${count} user${plural} selected`;
-    }
+    },
   },
   mounted() {
     this.getEnvironments();
@@ -794,10 +850,10 @@ export default {
   computed: {
     headerStyle() {
       return {
-        backgroundImage: `url(https://cdn.glitch.com/4804aa21-14f8-431e-b8d7-87a67866858a%2FOKTAFORMBIGGER.png?v=1567701043120)`
+        backgroundImage: `url(https://cdn.glitch.com/4804aa21-14f8-431e-b8d7-87a67866858a%2FOKTAFORMBIGGER.png?v=1567701043120)`,
       };
-    }
-  }
+    },
+  },
 };
 </script>
 

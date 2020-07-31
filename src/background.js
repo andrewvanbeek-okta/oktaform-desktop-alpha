@@ -92,6 +92,7 @@ const init = async () => {
     }
   }
 
+
   var tfGenerate = function (model, fullObject, resource, keys) {
     var name = fullObject.name || fullObject.profile.name
     name = name.replace(/[^a-zA-Z ]/g, "")
@@ -146,6 +147,18 @@ const init = async () => {
       this.consent_method = "TRUSTED"
       this.finalForm = tfGenerate(this, app, "okta_app_oauth", Object.keys(this));
       this.terraformId = tfId(app)
+    }
+  }
+
+
+  class GroupRule {
+    constructor(grouprule) {
+      this.name = grouprule.name;
+      this.status = grouprule.status
+      this.group_assignments = addArray(grouprule.groupIds)
+      this.expression_value = grouprule.conditions.expression.value
+      this.finalForm = tfGenerate(this, grouprule, "okta_group_rule", Object.keys(this));
+      this.terraformId = tfId(grouprule)
     }
   }
 
@@ -343,6 +356,9 @@ const init = async () => {
             case "trustedOrigins":
               return new TrustedOrigin(this.modelJson);
               break;
+            case "groups/rules":
+              return new GroupRule(this.modelJson);
+              break;
             case "scopes":
               return new AuthScope(this.modelJson);
           }
@@ -471,15 +487,24 @@ const init = async () => {
         var fullModel = new ModelCreator({ type: itemKey, resource: oktaJson });
         var finalForm = fullModel.model.finalForm;
         itemsToWrite.push(finalForm);
-        oktaJson.children.forEach(function (child) {
-          var childType = child.type
-          console.log("HERE")
-          child.childObjects.forEach(function (child) {
-            child.parentid = fullModel.model.terraformId
-            var childModel = new ModelCreator({ type: childType, resource: child })
-            itemsToWrite.push(childModel.model.finalForm)
+        console.log("CHILDREN BELOW ")
+        if(oktaJson.children){
+          oktaJson.children.forEach(function (child) {
+            var childType = child.type
+            console.log("HERE")
+            child.childObjects.forEach(function (child) {
+              child.parentid = fullModel.model.terraformId
+              var childModel = new ModelCreator({ type: childType, resource: child })
+              itemsToWrite.push(childModel.model.finalForm)
+            })
           })
-        })
+        }
+        if(oktaJson.groups) {
+          oktaJson.groups.forEach(function (group) {
+            var groupModel = new ModelCreator({ type: "groups", resource: group })
+            itemsToWrite.push(groupModel.model.finalForm)
+          })
+        }
       });
     }
     var content = ""
