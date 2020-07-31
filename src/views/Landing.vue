@@ -293,16 +293,32 @@
         </v-card>
       </v-dialog>
       <v-dialog v-model="schema" width="600px">
-          <v-card>
+        <v-card>
           <v-card-title>
             <span class="headline">Identity is everything: User Schemas do not match</span>
           </v-card-title>
-          <v-card-text>Oktaform has detected that the user schemas from Okta tenant Two are missing values from Okta tenant One</v-card-text>
+          <v-card-text>Oktaform has detected that the user schemas from Okta tenant Two are missing values from Okta tenant One, <strong>WARNING If you click resolve you will automatically resolve the differences and adding the missing schema properties, this action cannot not be reverted via Oktaform.  Additionally if you have issues CHECK THAT THE SAME FEATURES ARE ENABLED</strong></v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn color="green darken-1" text @click="resolveSchema()">resolve</v-btn>
             <v-btn color="green darken-1" text @click="schema = false">Close</v-btn>
           </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-dialog v-model="schemaTable" width="600px">
+        <v-card>
+          <v-card-title>
+            <span class="headline">Attributes Added</span>
+          </v-card-title>
+        <v-data-table
+          :headers="attributesAddedHeaders"
+          :items="attributesAdded"
+          :items-per-page="20"
+          class="elevation-1"
+        ></v-data-table>
+        <v-card-actions>
+          <v-btn color="green darken-1" text @click="schemaTable = false">Close</v-btn>
+        </v-card-actions>
         </v-card>
       </v-dialog>
       <modal name="spinner" :adaptive="true" :scrollable="true" width="50%" height="auto">
@@ -378,14 +394,14 @@ function getSafe(fn, defaultVal) {
   }
 }
 
-  var tfId = function (fullObject) {
-    var name = fullObject.name || fullObject.profile.name
-    name = name.replace(/[^a-zA-Z ]/g, "")
-    console.log(name)
-    console.log(fullObject)
-    var header = name.replace(/\s+/g, '') + fullObject.id
-    return header
-  }
+var tfId = function (fullObject) {
+  var name = fullObject.name || fullObject.profile.name;
+  name = name.replace(/[^a-zA-Z ]/g, "");
+  console.log(name);
+  console.log(fullObject);
+  var header = name.replace(/\s+/g, "") + fullObject.id;
+  return header;
+};
 
 export default {
   bodyClass: "landing-page",
@@ -421,6 +437,9 @@ export default {
       resources: {},
       schema: false,
       singleSelect: false,
+      attributesAdded: [],
+      attributesAddedHeaders: [],
+      schemaTable: false,
       search: "",
       policies: [],
       dialog: false,
@@ -673,17 +692,28 @@ export default {
       return environment;
     },
     async resolveSchema() {
-      var component = this
-        var setConfig = await this.$http.post(
-        "http://localhost:8000/schemas",
-        { tenantOne: this.tenantOneConfig, tenantTwo: this.tenantTwoConfig }
+      var component = this;
+      var setConfig = await this.$http.post("http://localhost:8000/schemas", {
+        tenantOne: this.tenantOneConfig,
+        tenantTwo: this.tenantTwoConfig,
+      });
+      console.log(setConfig.data);
+      component.attributesAdded = Object.values(
+        setConfig.data.missingProperties
       );
-      console.log(setConfig.data)
-      //component.resources["schemas"] = Object.values(setConfig.data.missingProperties)
-      //component.sendSelected()
+      component.attributesAddedHeaders = [
+        {
+          text: "title",
+          align: "start",
+          sortable: false,
+          value: "title",
+        },
+        { text: "type", value: "type" },
+      ];
+      component.schema = false;
+      component.schemaTable = true;
     },
     async applyEnvironmentTwo() {
-    
       this.tenantTwoName = this.tenantTwoConfig
         .split("oktaform_env_")[1]
         .split(".json")[0];
@@ -693,7 +723,7 @@ export default {
       );
       //this.defaultImport()
       console.log(setConfig);
-      this.schema = true
+      this.schema = true;
     },
     pullResources() {
       this.tenantOneName = this.tenantOneConfig
@@ -710,7 +740,11 @@ export default {
         "apps",
         "policies?type=OKTA_SIGN_ON",
         "idps?type=OIDC",
+        "idps?type=GOOGLE",
+        "idps?type=FACEBOOK",
         "trustedOrigins",
+        "policies?type=PASSWORD",
+        "policies?type=IDP_DISCOVERY"
       ];
       resources.forEach(function (rez) {
         component.resources[rez] = [];
@@ -785,6 +819,10 @@ export default {
             component.resources[resource].length - 1
           ].name = "Oktaform:default: " + component.tenantOneName;
         }
+
+        if(item.name == "Idp Discovery Policy") {
+          component.defaultImport(item);
+        }
         if (item.name.toUpperCase().includes("DEFAULT")) {
           if (item._links.self.href.includes("authorizationServers")) {
             component.defaultImport(item);
@@ -828,11 +866,11 @@ export default {
         console.log(groupsToAdd.includes(resource.id));
         return groupsToAdd.includes(resource.id);
       });
-      item.groupIds = item.groups.map(function(item) {
-        return "${okta_group." + tfId(item) + ".id}"
-      })
+      item.groupIds = item.groups.map(function (item) {
+        return "${okta_group." + tfId(item) + ".id}";
+      });
       console.log(item.groups);
-      console.log(item.groupIds)
+      console.log(item.groupIds);
       return groupsToAdd;
     },
     async getChildrenCollection(links) {

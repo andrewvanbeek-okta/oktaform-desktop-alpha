@@ -252,6 +252,38 @@ const init = async () => {
     }
   }
 
+  class SocialIdp {
+    constructor(idp) {
+      this.name = idp.name;
+      this.type = idp.type  
+      this.protocol_type = idp.protocol.type
+      this.scopes = addArray(idp.protocol.scopes)
+      this.client_id = idp.protocol.credentials.client.client_id;
+      this.client_secret = idp.protocol.credentials.client.client_secret;
+      this.username_template = "idpuser.email";
+      this.finalForm = tfGenerate(this, idp, "okta_idp_social", Object.keys(this));
+      this.terraformId = tfId(idp)
+    }
+  }
+
+  // resource "okta_idp_social" "example" {
+  //   type          = "FACEBOOK"
+  //   protocol_type = "OAUTH2"
+  //   name          = "testAcc_facebook_replace_with_uuid"
+  
+  //   scopes = [
+  //     "public_profile",
+  //     "email",
+  //   ]
+  
+  //   client_id         = "abcd123"
+  //   client_secret     = "abcd123"
+  //   username_template = "idpuser.email"
+  //   match_type        = "CUSTOM_ATTRIBUTE"
+  //   match_attribute   = "customfieldId"
+  // }
+
+
   class AuthorizationServer {
     constructor(server) {
       this.audiences = server.audiences;
@@ -329,6 +361,31 @@ const init = async () => {
         this,
         policy,
         "okta_policy_signon",
+        Object.keys(this)
+      )
+      this.terraformId = tfId(policy)
+    }
+  }
+
+  // resource "okta_policy_password" "example" {
+  //   name                   = "example"
+  //   status                 = "ACTIVE"
+  //   description            = "Example"
+  //   password_history_count = 4
+  //   groups_included        = ["${data.okta_group.everyone.id}"]
+  // }
+
+
+  class PasswordPolicy {
+    constructor(policy) {
+      this.status = policy.status;
+      this.name = policy.name;
+      this.description = policy.description || "static description"
+      this.password_history_count = policy.settings.password.age.historyCount
+      this.finalForm = tfGenerate(
+        this,
+        policy,
+        "okta_policy_password",
         Object.keys(this)
       )
       this.terraformId = tfId(policy)
@@ -422,6 +479,12 @@ const init = async () => {
               break;
             case "trustedOrigins":
               return new TrustedOrigin(this.modelJson);
+              break;
+            case "FACEBOOK":
+              return new SocialIdp(this.modelJson);
+              break;
+            case "GOOGLE":
+              return new SocialIdp(this.modelJson);
               break;
             case "groups/rules":
               return new GroupRule(this.modelJson);
@@ -683,7 +746,9 @@ const init = async () => {
     }
     modifiedSchema.definitions.custom.properties = missingProperties
     var data = modifiedSchema
-    var update = await axios.post(tenantTwoUrl + "/api/v1/meta/schemas/user/default", data, {headers: tenantTwoHeaders});
+    var update = await axios.post(tenantTwoUrl + "/api/v1/meta/schemas/user/default", data, {headers: tenantTwoHeaders}).catch(function (error) {
+      console.log(error)
+    })
     console.log(update)
     console.log(update.data)
 
@@ -901,19 +966,7 @@ const init = async () => {
       child.stderr.on('data', (data) => {
         console.error(`child stderr:\n${data}`);
       });
-      // var util = require('util'),
 
-      //   exec = require('child_process').exec;
-      // exec(`terraform init && terraform import ${fullAddress} ${defaultObject.id}`, {
-      //   cwd: supportpath + foldername
-      // }, function (error, stdout, stderr) {
-      //   // work with result
-      //   console.log(error);
-      //   console.log(stdout);
-      //   console.log(stderr);
-      //   //res.send({ "message": stdout })
-
-      // });
     }
     //}
   })
