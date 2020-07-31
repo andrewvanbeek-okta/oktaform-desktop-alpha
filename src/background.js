@@ -33,9 +33,9 @@ const init = async () => {
   const dotenv = require('dotenv');
   dotenv.config();
   //if (!isDevelopment) {
-    supportpath = getAppDataPath()
-    supportpath += "/"
-    supportdirpath = getAppDataPath()
+  supportpath = getAppDataPath()
+  supportpath += "/"
+  supportdirpath = getAppDataPath()
   //}
 
   // server.js
@@ -92,6 +92,14 @@ const init = async () => {
     }
   }
 
+  function getSafe(fn, defaultVal) {
+    try {
+      return fn();
+    } catch (e) {
+      return defaultVal;
+    }
+  }
+
 
   var tfGenerate = function (model, fullObject, resource, keys) {
     var name = fullObject.name || fullObject.profile.name
@@ -126,14 +134,14 @@ const init = async () => {
     return header
   }
 
-  var addArray = function(items) {
+  var addArray = function (items) {
     var list = []
     list.push.apply(list, items)
     return list
   }
 
-  var filterList = function(items, filter) {
-   return items.map(function(item) { return item[filter] })
+  var filterList = function (items, filter) {
+    return items.map(function (item) { return item[filter] })
   }
 
   class OauthApp {
@@ -247,7 +255,7 @@ const init = async () => {
         this,
         claim,
         "okta_auth_server_claim",
-        Object.keys(claim.group_filter_type ? this : {name: this.name, status: this.status, value_type: this.value_type, value: this.value, claim_type: this.claim_type, auth_server_id: this.auth_server_id})
+        Object.keys(claim.group_filter_type ? this : { name: this.name, status: this.status, value_type: this.value_type, value: this.value, claim_type: this.claim_type, auth_server_id: this.auth_server_id })
       )
       this.terraformId = tfId(claim)
     }
@@ -306,7 +314,7 @@ const init = async () => {
 
   class TrustedOrigin {
     constructor(origin) {
-      this.name   = origin.name
+      this.name = origin.name
       this.origin = origin.origin
       this.scopes = addArray(filterList(origin.scopes, "type"))
       this.finalForm = tfGenerate(
@@ -488,7 +496,7 @@ const init = async () => {
         var finalForm = fullModel.model.finalForm;
         itemsToWrite.push(finalForm);
         console.log("CHILDREN BELOW ")
-        if(oktaJson.children){
+        if (oktaJson.children) {
           oktaJson.children.forEach(function (child) {
             var childType = child.type
             console.log("HERE")
@@ -499,7 +507,7 @@ const init = async () => {
             })
           })
         }
-        if(oktaJson.groups) {
+        if (oktaJson.groups) {
           oktaJson.groups.forEach(function (group) {
             var groupModel = new ModelCreator({ type: "groups", resource: group })
             itemsToWrite.push(groupModel.model.finalForm)
@@ -517,13 +525,13 @@ const init = async () => {
       content += fs.readFileSync(supportpath + foldername + "/default.tf")
       console.log(content)
     }
-    
+
     itemsToWrite.forEach(async function (item, index, array) {
-     // console.log(item)
-     console.log("CHECK")
-    //  console.log(content.toString().trim())
-    //  console.log(item.toString().trim())
-     console.log(item.toString().trim() == content.toString().trim())
+      // console.log(item)
+      console.log("CHECK")
+      //  console.log(content.toString().trim())
+      //  console.log(item.toString().trim())
+      console.log(item.toString().trim() == content.toString().trim())
       console.log(content.toString().includes(item.toString()))
       console.log("CHECK")
       content = content.toString().trim()
@@ -545,12 +553,12 @@ const init = async () => {
             console.log(error);
             console.log(stdout);
             console.log(stderr);
-            if(stdout) {
+            if (stdout) {
               res.send({ message: stdout })
             } else {
               res.send({ message: stderr })
             }
-     
+
           });
 
           //res.download(supportpath + foldername + "/" + filename + ".tf");
@@ -565,6 +573,44 @@ const init = async () => {
 
 
   });
+
+  app.post("/schemas", async function (req, res) {
+    var oktaConfigTenantOne = await getEnvironment(req.body.tenantOne)
+    var oktaConfigTenantTwo = await getEnvironment(req.body.tenantTwo)
+    console.log("YO YO YO YO YO YO")
+    console.log(oktaConfigTenantOne)
+    console.log(oktaConfigTenantTwo)
+    var tenantOneUrl = oktaConfigTenantOne.url
+    var tenantTwoUrl = oktaConfigTenantTwo.url
+    var tenantOneToken = oktaConfigTenantOne.apiToken
+    var tenantTwoToken = oktaConfigTenantTwo.apiToken
+    var tenantOneHeaders = {
+      "Cache-Control": "no-cache",
+      Authorization: "SSWS " + tenantOneToken,
+      "Content-Type": "application/json",
+      Accept: "application/json"
+    }
+    var tenantTwoHeaders = {
+      "Cache-Control": "no-cache",
+      Authorization: "SSWS " + tenantTwoToken,
+      "Content-Type": "application/json",
+      Accept: "application/json"
+    }
+    var tenantOne = await axios.get(tenantOneUrl + "/api/v1/meta/schemas/user/default", { headers: tenantOneHeaders })
+    var tenantOneSchema = tenantOne.data.definitions.custom.properties
+    var tenantTwo = await axios.get(tenantTwoUrl + "/api/v1/meta/schemas/user/default", { headers: tenantTwoHeaders })
+    var tenantTwoSchema = tenantTwo.data.definitions.custom.properties
+    // console.log(tenantOneSchema)
+    // console.log(tenantTwoSchema)
+    var missingProperties = {}
+    var tenantTwoPropertiesKeys = Object.keys(tenantTwoSchema)
+    for (var key in tenantOneSchema) {
+      if(!tenantTwoPropertiesKeys.includes(key)) {
+        missingProperties[key] = tenantOneSchema[key]
+      }
+    }
+    res.send({schemaOne: tenantOneSchema, schemaTwo: tenantTwoSchema, missingProperties: missingProperties})
+  })
 
   app.get("/resource", async function (req, res) {
     var request = require("request");
@@ -727,69 +773,69 @@ const init = async () => {
     }
     var defaultObject = {}
     var resource = ""
-    if(req.body.type == "authorizationServers") {
+    if (req.body.type == "authorizationServers") {
       var migratedServer = req.body.resource
       var getDefaultResourceServer = await axios.get(url + "/api/v1/authorizationServers?q=default&limit=1", { headers: headers })
       var defaultServer = getDefaultResourceServer.data[0]
       var serverAddress = tfId(migratedServer)
       var serverId = defaultServer.id
-      var fullModel = new ModelCreator({ type: "authorizationServers", resource: migratedServer});
-      var finalForm = fullModel.model.finalForm  + "\n"
+      var fullModel = new ModelCreator({ type: "authorizationServers", resource: migratedServer });
+      var finalForm = fullModel.model.finalForm + "\n"
       defaultObject = { "type": "okta_auth_server", tf: finalForm, id: serverId, address: serverAddress }
-    } 
+    }
 
     var file = supportpath + foldername + "/default.tf"
     //if (!fs.existsSync(file)) {
-      var content = ""
-      if (fs.existsSync(supportpath + foldername + "/default.tf")) {
-        content = fs.readFileSync(supportpath + foldername + "/default.tf")
-        console.log(content)
-      }
-      console.log(supportpath + foldername + "/default.tf")
-      var fullAddress = defaultObject.type + "." + defaultObject.address
-      var resourceHeader = fullAddress.split(".").slice(0, 2).map(function(addressString){ return `"${addressString}"`}).join(" ")
-      console.log("this is the resource header")
-      console.log(resourceHeader)
-      if (!content.includes(resourceHeader)){
-        fs.appendFileSync(supportpath + foldername + "/default.tf", defaultObject.tf, function (err) {
-          console.log(err)
-        })
+    var content = ""
+    if (fs.existsSync(supportpath + foldername + "/default.tf")) {
+      content = fs.readFileSync(supportpath + foldername + "/default.tf")
+      console.log(content)
+    }
+    console.log(supportpath + foldername + "/default.tf")
+    var fullAddress = defaultObject.type + "." + defaultObject.address
+    var resourceHeader = fullAddress.split(".").slice(0, 2).map(function (addressString) { return `"${addressString}"` }).join(" ")
+    console.log("this is the resource header")
+    console.log(resourceHeader)
+    if (!content.includes(resourceHeader)) {
+      fs.appendFileSync(supportpath + foldername + "/default.tf", defaultObject.tf, function (err) {
+        console.log(err)
+      })
 
-        console.log(fullAddress)
-        const { spawn } = require('child_process');
-        const child = spawn(`terraform init && terraform import ${fullAddress} ${defaultObject.id}`, {
-          stdio: 'inherit',
-          shell: true,
-          cwd: supportpath + foldername
-        });
+      console.log(fullAddress)
+      const { spawn } = require('child_process');
+      const child = spawn(`terraform init && terraform import ${fullAddress} ${defaultObject.id}`, {
+        stdio: 'inherit',
+        shell: true,
+        cwd: supportpath + foldername
+      });
 
-        child.on('exit', function (code, signal) {
-          console.log('child process exited with ' +
-                      `code ${code} and signal ${signal}`);
-        });
+      child.on('exit', function (code, signal) {
+        console.log('child process exited with ' +
+          `code ${code} and signal ${signal}`);
+      });
 
-        child.stdout.on('data', (data) => {
-          console.log(`child stdout:\n${data}`);
-          res.send({message: data})
-        });
-        
-        child.stderr.on('data', (data) => {
-          console.error(`child stderr:\n${data}`);
-        });
-        // var util = require('util'),
+      child.stdout.on('data', (data) => {
+        console.log(`child stdout:\n${data}`);
+        res.send({ message: data })
+      });
 
-        //   exec = require('child_process').exec;
-        // exec(`terraform init && terraform import ${fullAddress} ${defaultObject.id}`, {
-        //   cwd: supportpath + foldername
-        // }, function (error, stdout, stderr) {
-        //   // work with result
-        //   console.log(error);
-        //   console.log(stdout);
-        //   console.log(stderr);
-        //   //res.send({ "message": stdout })
-        
-        // });
-      }
+      child.stderr.on('data', (data) => {
+        console.error(`child stderr:\n${data}`);
+      });
+      // var util = require('util'),
+
+      //   exec = require('child_process').exec;
+      // exec(`terraform init && terraform import ${fullAddress} ${defaultObject.id}`, {
+      //   cwd: supportpath + foldername
+      // }, function (error, stdout, stderr) {
+      //   // work with result
+      //   console.log(error);
+      //   console.log(stdout);
+      //   console.log(stderr);
+      //   //res.send({ "message": stdout })
+
+      // });
+    }
     //}
   })
 
@@ -832,7 +878,7 @@ const init = async () => {
   //   })
   // })
 
-    app.get("/environments", async function (req, res) {
+  app.get("/environments", async function (req, res) {
 
     const dirpath = path.join(__dirname, '..')
     var EXTENSION = '.json';
@@ -854,7 +900,7 @@ const init = async () => {
           if (path.extname(file).toLowerCase() === EXTENSION && path.basename(file).includes("oktaform_env_")) {
             var contents = await fs.readFileSync(supportpath + file).toString()
             console.log(contents.toString())
-            filestosend.push({ name: file})
+            filestosend.push({ name: file })
 
             console.log(filestosend)
             if (index === (array.length - 1)) {

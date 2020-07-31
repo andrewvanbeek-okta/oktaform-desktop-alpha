@@ -292,6 +292,19 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
+      <v-dialog v-model="schema" width="600px">
+          <v-card>
+          <v-card-title>
+            <span class="headline">Identity is everything: User Schemas do not match</span>
+          </v-card-title>
+          <v-card-text>Oktaform has detected that the user schemas from Okta tenant Two are missing values from Okta tenant One</v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="green darken-1" text @click="resolveSchema()">resolve</v-btn>
+            <v-btn color="green darken-1" text @click="schema = false">Close</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
       <modal name="spinner" :adaptive="true" :scrollable="true" width="50%" height="auto">
         <center>
           <h3>Hold tight</h3>
@@ -406,6 +419,7 @@ export default {
     return {
       url: null,
       resources: {},
+      schema: false,
       singleSelect: false,
       search: "",
       policies: [],
@@ -658,7 +672,15 @@ export default {
       });
       return environment;
     },
+    async resolveSchema() {
+        var setConfig = await this.$http.post(
+        "http://localhost:8000/schemas",
+        { tenantOne: this.tenantOneConfig, tenantTwo: this.tenantTwoConfig }
+      );
+      console.log(setConfig.data)
+    },
     async applyEnvironmentTwo() {
+    
       this.tenantTwoName = this.tenantTwoConfig
         .split("oktaform_env_")[1]
         .split(".json")[0];
@@ -668,6 +690,7 @@ export default {
       );
       //this.defaultImport()
       console.log(setConfig);
+      this.schema = true
     },
     pullResources() {
       this.tenantOneName = this.tenantOneConfig
