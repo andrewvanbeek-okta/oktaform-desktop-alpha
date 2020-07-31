@@ -673,11 +673,14 @@ export default {
       return environment;
     },
     async resolveSchema() {
+      var component = this
         var setConfig = await this.$http.post(
         "http://localhost:8000/schemas",
         { tenantOne: this.tenantOneConfig, tenantTwo: this.tenantTwoConfig }
       );
       console.log(setConfig.data)
+      //component.resources["schemas"] = Object.values(setConfig.data.missingProperties)
+      //component.sendSelected()
     },
     async applyEnvironmentTwo() {
     

@@ -125,6 +125,30 @@ const init = async () => {
     return body;
   };
 
+  var tfGenerateSchema = function (model, fullObject, resource, keys) {
+    var name = fullObject.title
+    name = name.replace(/[^a-zA-Z ]/g, "")
+    console.log(name)
+    console.log(fullObject)
+    var header =
+      "resource " +
+      JSON.stringify(resource) +
+      " " +
+      JSON.stringify(name.replace(/\s+/g, '') + fullObject.index);
+    var body = header + " {\n";
+    keys.forEach(function (key) {
+      var keyvalue = "";
+      if (typeof model[key] === "string") {
+        keyvalue = JSON.stringify(model[key]);
+      } else {
+        keyvalue = JSON.stringify(model[key]);
+      }
+      body = body + String(key) + " = " + keyvalue + "\n";
+    });
+    body = body + "}\n";
+    return body;
+  };
+
   var tfId = function (fullObject) {
     var name = fullObject.name || fullObject.profile.name
     name = name.replace(/[^a-zA-Z ]/g, "")
@@ -158,6 +182,41 @@ const init = async () => {
     }
   }
 
+  // resource "okta_user_schema" "example" {
+  //   index       = "customPropertyName"
+  //   title       = "customPropertyName"
+  //   type        = "string"
+  //   description = "My custom property name"
+  //   master      = "OKTA"
+  //   scope       = "SELF"
+  // }
+
+
+
+  class SchemaAttribute {
+    constructor(attribute) {
+      this.index = attribute.index
+      this.title = attribute.title
+      this.type = attribute.type
+      this.description = attribute.description || "missing attribute from oktaform"
+      this.master = "OKTA"
+      this.scope = "SELF"
+      this.finalForm = tfGenerateSchema(this, attribute, "okta_user_schema", Object.keys(this));
+    }
+  }
+
+  class SchemaAttributeArray {
+    constructor(attribute) {
+      this.index = attribute.index
+      this.title = attribute.title
+      this.type = attribute.type
+      this.description = attribute.description || "missing attribute from oktaform"
+      this.master = "OKTA"
+      this.scope = "SELF"
+      this.finalForm = tfGenerate(this, attribute, "okta_user_schema", Object.keys(this));
+      this.terraformId = tfId(attribute)
+    }
+  }
 
   class GroupRule {
     constructor(grouprule) {
@@ -366,6 +425,9 @@ const init = async () => {
               break;
             case "groups/rules":
               return new GroupRule(this.modelJson);
+              break;
+            case "schemas":
+              return new SchemaAttribute(this.modelJson);
               break;
             case "scopes":
               return new AuthScope(this.modelJson);
@@ -603,13 +665,30 @@ const init = async () => {
     // console.log(tenantOneSchema)
     // console.log(tenantTwoSchema)
     var missingProperties = {}
+    var missingPropertiesArrayTypes = {}
     var tenantTwoPropertiesKeys = Object.keys(tenantTwoSchema)
     for (var key in tenantOneSchema) {
-      if(!tenantTwoPropertiesKeys.includes(key)) {
+      if (!tenantTwoPropertiesKeys.includes(key)) {
         missingProperties[key] = tenantOneSchema[key]
       }
     }
-    res.send({schemaOne: tenantOneSchema, schemaTwo: tenantTwoSchema, missingProperties: missingProperties})
+    var modifiedSchema = {
+      "definitions": {
+        "custom": {
+          "id": "#custom",
+          "type": "object",
+          "required": []
+        }
+      }
+    }
+    modifiedSchema.definitions.custom.properties = missingProperties
+    var data = modifiedSchema
+    var update = await axios.post(tenantTwoUrl + "/api/v1/meta/schemas/user/default", data, {headers: tenantTwoHeaders});
+    console.log(update)
+    console.log(update.data)
+
+
+    res.send({ schemaOne: tenantOneSchema, schemaTwo: tenantTwoSchema, missingProperties: missingProperties })
   })
 
   app.get("/resource", async function (req, res) {
