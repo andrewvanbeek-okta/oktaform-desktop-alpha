@@ -905,6 +905,10 @@ const init = async () => {
     });
   })
 
+  //new import creates default Data values 
+  //
+  
+
   app.post("/import", async function (req, res) {
     var foldername = req.body.name.split(".json")[0]
     var oktaConfig = await getEnvironment(req.body.name)
@@ -1069,20 +1073,43 @@ const init = async () => {
       base_url  = "${orgtype}"
     }`
     var configDir = req.body.name.split(".json")[0]
-    var dir = ""
-    if (isDevelopment) {
-      dir = './' + configDir
-    } else {
-      dir = './' + supportpath + configDir
+    var dir = supportpath + configDir
+    // if (isDevelopment) {
+    //   dir = './' + configDir
+    // } else {
+    //   dir = './' + supportpath + configDir
+    // }
+    var defaults =
+    `data "okta_group" "everyone" {
+      name = "Everyone"
     }
+
+    data okta_policy discovery {
+      name = "Idp Discovery Policy"
+      type = "IDP_DISCOVERY"
+    }
+
+    data "okta_auth_server" "default" {
+      name = "default"
+    }
+
+    data "okta_default_policy" "password" {
+      type = "PASSWORD"
+    }
+
+    data "okta_default_policy" "signon" {
+      type = "SIGN_ON"
+    }
+    `
 
 
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir);
-      fs.writeFileSync(supportpath + configDir + "/" + "init.tf", tfFile)
+      fs.writeFileSync(supportpath + configDir + "/" + "init.tf", defaults)
+      fs.writeFileSync(supportpath + configDir + "/" + "default.tf", tfFile)
       res.send({ message: "file was overwritten" })
     } else {
-      fs.writeFileSync(supportpath + configDir + "/" + "init.tf", tfFile);
+      fs.writeFileSync(supportpath + configDir + "/" + "default.tf", defaults);
       res.send({ message: "file was overwritten" })
     }
   })
