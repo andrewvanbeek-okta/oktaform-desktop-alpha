@@ -297,7 +297,10 @@
           <v-card-title>
             <span class="headline">Identity is everything: User Schemas do not match</span>
           </v-card-title>
-          <v-card-text>Oktaform has detected that the user schemas from Okta tenant Two are missing values from Okta tenant One, <strong>WARNING If you click resolve you will automatically resolve the differences and adding the missing schema properties, this action cannot not be reverted via Oktaform.  Additionally if you have issues CHECK THAT THE SAME FEATURES ARE ENABLED</strong></v-card-text>
+          <v-card-text>
+            Oktaform has detected that the user schemas from Okta tenant Two are missing values from Okta tenant One,
+            <strong>WARNING If you click resolve you will automatically resolve the differences and adding the missing schema properties, this action cannot not be reverted via Oktaform. Additionally if you have issues CHECK THAT THE SAME FEATURES ARE ENABLED</strong>
+          </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn color="green darken-1" text @click="resolveSchema()">resolve</v-btn>
@@ -310,15 +313,15 @@
           <v-card-title>
             <span class="headline">Attributes Added</span>
           </v-card-title>
-        <v-data-table
-          :headers="attributesAddedHeaders"
-          :items="attributesAdded"
-          :items-per-page="20"
-          class="elevation-1"
-        ></v-data-table>
-        <v-card-actions>
-          <v-btn color="green darken-1" text @click="schemaTable = false">Close</v-btn>
-        </v-card-actions>
+          <v-data-table
+            :headers="attributesAddedHeaders"
+            :items="attributesAdded"
+            :items-per-page="20"
+            class="elevation-1"
+          ></v-data-table>
+          <v-card-actions>
+            <v-btn color="green darken-1" text @click="schemaTable = false">Close</v-btn>
+          </v-card-actions>
         </v-card>
       </v-dialog>
       <modal name="spinner" :adaptive="true" :scrollable="true" width="50%" height="auto">
@@ -725,7 +728,7 @@ export default {
       console.log(setConfig);
       this.schema = true;
     },
-    pullResources() {
+    async pullResources() {
       this.tenantOneName = this.tenantOneConfig
         .split("oktaform_env_")[1]
         .split(".json")[0];
@@ -740,20 +743,21 @@ export default {
         "apps",
         "policies?type=OKTA_SIGN_ON",
         "idps?type=OIDC",
+        "idps?type=SAML2",
         "idps?type=GOOGLE",
         "idps?type=FACEBOOK",
         "trustedOrigins",
         "policies?type=PASSWORD",
-        "policies?type=IDP_DISCOVERY"
+        "policies?type=IDP_DISCOVERY",
       ];
-      resources.forEach(function (rez) {
+      resources.forEach(async function (rez) {
         component.resources[rez] = [];
         component.$http
           .post("http://localhost:8000/resource", {
             name: component.tenantOneConfig,
             resource: rez,
           })
-          .then(function (response) {
+          .then(async function (response) {
             var objectBase = Object.keys(response.data[0]);
             if (
               objectBase.includes("profile") &&
@@ -775,6 +779,28 @@ export default {
               respData: response.data,
               headers: headers,
             };
+            if (table.title == "policies?type=IDP_DISCOVERY") {
+              console.log("HERE HERE");
+              if (table.respData) {
+                var item = getSafe(() => table.respData[0]);
+                console.log(`item ${item}`);
+                console.log(item);
+                var links = Object.keys(item._links)
+                  .filter(function (link) {
+                    return (
+                      link.toString() == "claims" ||
+                      link.toString() == "scopes" ||
+                      link.toString() == "rules" ||
+                      link.toString() == "policies"
+                    );
+                  })
+                  .map(function (filteredlink) {
+                    return item._links[filteredlink].href;
+                  });
+                var children = await component.getChildrenCollection(links);
+                table.respData = getSafe(() => children[0].childObjects);
+              }
+            }
             console.log("BELOW IS THE TABLE");
             console.log(headers);
             component.tables.push(table);
@@ -796,6 +822,7 @@ export default {
         component.resources[resource].push(item);
         var mostRecentItem = item;
         if (mostRecentItem._links) {
+          //var links = component.mapLinks(mostRecentItem)
           var links = Object.keys(mostRecentItem._links)
             .filter(function (link) {
               return (
@@ -820,7 +847,7 @@ export default {
           ].name = "Oktaform:default: " + component.tenantOneName;
         }
 
-        if(item.name == "Idp Discovery Policy") {
+        if (item.name == "Idp Discovery Policy") {
           component.defaultImport(item);
         }
         if (item.name.toUpperCase().includes("DEFAULT")) {
@@ -844,34 +871,43 @@ export default {
       });
     },
     async findIncludes(item) {
+      //type group_rule, IDP_DISCOVERY, OKTA_SIGN_ON, PASSWORD
       var itemType = {
-        actions: await getSafe(() => item.actions.assignUserToGroups.groupIds),
-        conditions: await getSafe(() => item.conditions.people.groups.include),
+        group_rule: {
+          tobeAdded: await getSafe(
+            () => item.actions.assignUserToGroups.groupIds
+          ),
+          type: "groups",
+        },
+        OKTA_SIGN_ON: {
+          tobeAdded: await getSafe(() => item.conditions.people.groups.include),
+          type: "groups",
+        },
+        PASSWORD: {
+          tobeAdded: await getSafe(() => item.conditions.people.groups.include),
+          type: "groups",
+        },
+        IDP_DISCOVERY: {
+          tobeAdded: await getSafe(() => item.conditions.people.groups.include),
+          type: "policies?type=IDP_DISCOVERY",
+          searchChilderen: true,
+        },
       };
-      var groupsToAdd = [];
-      if (item["actions"]) {
-        groupsToAdd = itemType["actions"];
-      } else if (item["conditions"]) {
-        groupsToAdd = itemType["conditions"];
-      }
-      console.log(groupsToAdd);
-      console.log(this.tables);
+      var resourcesToAdd = await itemType[item.type].tobeAdded;
+      console.log(resourcesToAdd);
       var groups = await this.tables.find(function (resource) {
-        return resource.title === "groups";
+        return resource.title === itemType[item.type].type;
       });
       console.log("#####");
       console.log(groups);
       console.log("#####");
       item.groups = groups.respData.filter(function (resource) {
-        console.log(groupsToAdd.includes(resource.id));
-        return groupsToAdd.includes(resource.id);
+        return resourcesToAdd.includes(resource.id);
       });
       item.groupIds = item.groups.map(function (item) {
         return "${okta_group." + tfId(item) + ".id}";
       });
-      console.log(item.groups);
-      console.log(item.groupIds);
-      return groupsToAdd;
+      return resourcesToAdd;
     },
     async getChildrenCollection(links) {
       var component = this;

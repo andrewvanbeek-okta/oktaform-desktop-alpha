@@ -252,6 +252,38 @@ const init = async () => {
     }
   }
 
+  class SamlIdp {
+    constructor(idp) {
+      this.name = idp.name;
+      this.acs_type = "INSTANCE";
+      this.acs_binding = "HTTP-POST";
+      this.sso_url = idp.protocol.endpoints.sso.url;
+      this.sso_destination = idp.protocol.endpoints.sso.destination;
+      this.sso_binding = idp.protocol.endpoints.acs.binding
+      this.issuer = idp.protocol.credentials.trust.issuer
+      this.kid =  "${okta_idp_saml_key.test.id}"
+      this.username_template = "idpuser.email";
+      this.request_signature_scope  = "REQUEST"
+      this.response_signature_scope = "ANY"
+      this.finalForm = tfGenerate(this, idp, "okta_idp_saml", Object.keys(this));
+      this.terraformId = tfId(idp)
+    }
+  }
+
+  // resource "okta_idp_saml" "example" {
+  //   name                     = "testAcc_replace_with_uuid"
+  //   acs_binding              = "HTTP-POST"
+  //   acs_type                 = "INSTANCE"
+  //   sso_url                  = "https://idp.example.com"
+  //   sso_destination          = "https://idp.example.com"
+  //   sso_binding              = "HTTP-POST"
+  //   username_template        = "idpuser.email"
+  //   kid                      = "${okta_idp_saml_key.test.id}"
+  //   issuer                   = "https://idp.example.com"
+  //   request_signature_scope  = "REQUEST"
+  //   response_signature_scope = "ANY"
+  // }
+
   class SocialIdp {
     constructor(idp) {
       this.name = idp.name;
@@ -474,6 +506,9 @@ const init = async () => {
             case "OIDC":
               return new OidcIdp(this.modelJson);
               break;
+            case "SAML2":
+              return new SamlIdp(this.modelJson);
+              break;
             case "claims":
               return new AuthClaim(this.modelJson);
               break;
@@ -500,6 +535,8 @@ const init = async () => {
       this.model = this.create();
     }
   }
+
+  var defaultDataId = {"IDP_DISCOVERY": "${data.okta_policy.discovery.id}", "SIGN_ON": "${data.okta_policy.signon.id}", "PASSWORD": "${data.okta_policy.signon.id}", "authorizationServers": "${data.okta_auth_server.default.id}"}
 
   // http://expressjs.com/en/starter/static-files.html
   app.use(express.static("public"));
@@ -585,23 +622,6 @@ const init = async () => {
     return toReturn;
   };
 
-  // http://expressjs.com/en/starter/basic-routing.html
-  app.get("/test", function (req, res) {
-    console.log("HERE")
-    var foldername = "oktaform_env_avb_tenant_for_real"
-    var testsupportpath = getAppDataPath()
-    testsupportpath += "/"
-    var filename = "oktaform"
-    console.log(testsupportpath + foldername + "/" + filename + ".tf")
-    var content = ""
-    if (fs.existsSync(testsupportpath + foldername + "/" + filename + ".tf")) {
-      console.log("GETS IN HERE")
-      content = fs.readFileSync(testsupportpath + foldername + "/" + filename + ".tf")
-      console.log(content.toString())
-    }
-
-  });
-
   app.post("/writeAll", function (req, res) {
     var autogenerate = true
     //console.log(req.body)
@@ -617,9 +637,18 @@ const init = async () => {
         if (key.includes("?type=")) {
           itemKey = key.split("?type=")[1];
         }
+        console.log(oktaJson)
+        console.log(itemKey)
         var fullModel = new ModelCreator({ type: itemKey, resource: oktaJson });
+
+          var finalForm = fullModel.model.finalForm;     
+        
         var finalForm = fullModel.model.finalForm;
-        itemsToWrite.push(finalForm);
+        if(!oktaJson.system) {
+          itemsToWrite.push(finalForm);
+        } else {
+          fullModel.model.terraformId = defaultDataId[itemKey]
+        }
         console.log("CHILDREN BELOW ")
         if (oktaJson.children) {
           oktaJson.children.forEach(function (child) {
@@ -988,32 +1017,6 @@ const init = async () => {
     })
   })
 
-  // app.get("/environments", async function (req, res) {
-
-  //   const dirpath = path.join(__dirname, '..')
-  //   var EXTENSION = '.json';
-  //   var directory_path = supportdirpath
-  //   if (isDevelopment) {
-  //     directory_path = dirpath
-  //   }
-  //   fs.readdir(directory_path, function (err, files) {
-  //     var targetFiles = files.filter(function (file) {
-  //       return path.extname(file).toLowerCase() === EXTENSION && path.basename(file).includes("oktaform_env_")
-  //     });
-  //     if (targetFiles === undefined || targetFiles.length == 0) {
-  //       // array empty or does not exist
-  //       res.send({ error: "no files found", currentpath: directory_path })
-  //     } else {
-  //       targetFiles = targetFiles.map(function (file) {
-  //         var timestamp = fs.statSync(file).mtime.getTime()
-  //         const date = new Date(timestamp);
-  //         return { name: file, timestamp: date }
-  //       })
-  //       res.send({ files: targetFiles })
-  //     }
-  //   })
-  // })
-
   app.get("/environments", async function (req, res) {
 
     const dirpath = path.join(__dirname, '..')
@@ -1079,6 +1082,8 @@ const init = async () => {
     // } else {
     //   dir = './' + supportpath + configDir
     // }
+    var samlCert = "${okta_app_saml.test.certificate}"
+    var nameTemplateID = "$${user.userName}"
     var defaults =
     `data "okta_group" "everyone" {
       name = "Everyone"
@@ -1093,13 +1098,35 @@ const init = async () => {
       name = "default"
     }
 
-    data "okta_default_policy" "password" {
+    data "okta_policy" "password" {
+      name = "Default Policy"
       type = "PASSWORD"
     }
 
-    data "okta_default_policy" "signon" {
-      type = "SIGN_ON"
+    data "okta_policy" "signon" {
+      name = "Default Policy"
+      type = "OKTA_SIGN_ON"
     }
+
+    resource okta_app_saml test {
+      label                    = "testAcc_replace_with_uuid"
+      sso_url                  = "http://google.com"
+      recipient                = "http://here.com"
+      destination              = "http://its-about-the-journey.com"
+      audience                 = "http://audience.com"
+      subject_name_id_template = "${nameTemplateID}"
+      subject_name_id_format   = "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"
+      response_signed          = true
+      signature_algorithm      = "RSA_SHA256"
+      digest_algorithm         = "SHA256"
+      honor_force_authn        = false
+      authn_context_class_ref  = "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport"
+    }
+
+    resource okta_idp_saml_key test {
+      x5c = ["${samlCert}"]
+    }
+
     `
 
 
