@@ -742,6 +742,7 @@ export default {
         "authorizationServers",
         "apps",
         "policies?type=OKTA_SIGN_ON",
+        "idps",
         "idps?type=OIDC",
         "idps?type=SAML2",
         "idps?type=GOOGLE",
@@ -819,7 +820,12 @@ export default {
       var component = this;
       console.log(component.selected);
       if (!component.resources[resource].includes(item)) {
-        component.resources[resource].push(item);
+        if (resource != "idps") {
+          component.resources[resource].push(item);
+        } else {
+          resource += "?type=" + item.type;
+        }
+
         var mostRecentItem = item;
         if (mostRecentItem._links) {
           //var links = component.mapLinks(mostRecentItem)
@@ -888,25 +894,49 @@ export default {
           type: "groups",
         },
         IDP_DISCOVERY: {
-          tobeAdded: await getSafe(() => item.conditions.people.groups.include),
-          type: "policies?type=IDP_DISCOVERY",
-          searchChilderen: true,
+          tobeAdded: await getSafe(() => item.actions.idp.providers),
+          multiple: true,
+          type: "idps",
         },
       };
-      var resourcesToAdd = await itemType[item.type].tobeAdded;
-      console.log(resourcesToAdd);
-      var groups = await this.tables.find(function (resource) {
-        return resource.title === itemType[item.type].type;
-      });
-      console.log("#####");
-      console.log(groups);
-      console.log("#####");
-      item.groups = groups.respData.filter(function (resource) {
-        return resourcesToAdd.includes(resource.id);
-      });
-      item.groupIds = item.groups.map(function (item) {
-        return "${okta_group." + tfId(item) + ".id}";
-      });
+      var resourcesToAdd = [];
+      if (!itemType[item.type].multiple) {
+        resourcesToAdd = await itemType[item.type].tobeAdded;
+        console.log(resourcesToAdd);
+        var groups = await this.tables.find(function (resource) {
+          return resource.title === itemType[item.type].type;
+        });
+        console.log("#####");
+        console.log(groups);
+        console.log("#####");
+        item.groups = groups.respData.filter(function (resource) {
+          return resourcesToAdd.includes(resource.id);
+        });
+        item.groupIds = item.groups.map(function (item) {
+          return "${okta_group." + tfId(item) + ".id}";
+        });
+      } else {
+        console.log(await itemType[item.type])
+        resourcesToAdd = await itemType[item.type].tobeAdded.map(function(idp) {
+          return idp.id
+        })
+         var idps = await this.tables.find(function (resource) {
+          return resource.title === itemType[item.type].type;
+        });
+        console.log("find this")
+        console.log(resourcesToAdd)
+        console.log(idps)
+        console.log("find this")
+        item.idps = idps.respData.filter(function (resource) {
+          return resourcesToAdd.includes(resource.id);
+        });
+        console.log(item.idps)
+        item.idpIds = item.idps.map(function (item) {
+          return "${okta_group." + tfId(item) + ".id}";
+        });
+        console.log(item.idpIds)
+      }
+
       return resourcesToAdd;
     },
     async getChildrenCollection(links) {

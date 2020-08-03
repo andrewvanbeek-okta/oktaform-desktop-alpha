@@ -793,7 +793,7 @@ const init = async () => {
     var token = oktaConfig.apiToken
     var options = {
       method: "GET",
-      url: req.query.url + "/api/v1/" + object,
+      url: req.query.url + "/api/v1/" + object + "?limit=200",
       headers: {
         "Cache-Control": "no-cache",
         Authorization: "SSWS " + token,
@@ -814,6 +814,11 @@ const init = async () => {
     var url = oktaConfig.url
     var token = oktaConfig.apiToken
     var object = req.body.resource
+    if(object.includes("?")) {
+      object += "&limit=1000"
+    } else {
+      object += "?limit=1000"
+    }
     var options = {
       method: "GET",
       url: url + "/api/v1/" + object,
