@@ -150,8 +150,12 @@ const init = async () => {
         console.log("HEREEEEEEE if not mu")
         console.log(getSafe(() => model[key]["multiple"]))
         console.log("HEREEEEEEE")
+        var divider = " "
+        if(model[key]["divider"]) {
+          divider = model[key]["divider"]
+        }      
         model[key]["values"].forEach(function(value) {
-          body = body + String(key) + value + "\n";
+          body = body + String(key) + divider + value + "\n";
         })
       }
       else if(model[key] != "xxoktaform:nothing-herexx") {
@@ -195,8 +199,9 @@ const init = async () => {
   var fancyObject = function(object) {
     var contents = ``
     for (var key in object) {
-      if (object.hasOwnProperty(key)) {
-          contents += `${convertCamelCase(key)} = "${object[key]}"`
+      if (object.hasOwnProperty(key) && typeof object[key] != "object") {
+          contents += `${convertCamelCase(key)} = "${object[key]}"
+          `
           contents += "\n"
       }
     }
@@ -532,6 +537,82 @@ const init = async () => {
     }
   }
 
+  class InlineHook {
+    constructor(hook) {
+      this.status = hook.status;
+      this.name = hook.name;
+      this.type = hook.type
+      this.version = hook.version
+      this.channel = {multiple: true, divider: " = ", values: [fancyObject({"version": hook.channel.version, "uri": hook.channel.config.uri, "type": "HTTP"})]}
+      this.auth = {multiple: true, divider: " = ", values: [fancyObject({"key": "Authorization", "type": "HEADER", "value": "secret"})]}
+      this.finalForm = tfGenerateSchema (
+        this,
+        hook,
+        "okta_inline_hook",
+        Object.keys(this)
+      )
+      this.terraformId = tfId(hook)
+    }
+  }
+
+  class EventHook {
+    constructor(hook) {
+      this.name = hook.name;
+      this.events = addArray(hook.events.items)
+      this.channel = {multiple: true, divider: " = ", values: [fancyObject({"version": hook.channel.version, "uri": hook.channel.config.uri, "type": "HTTP"})]}
+      this.auth = {multiple: true, divider: " = ", values: [fancyObject({"key": "Authorization", "type": "HEADER", "value": "secret"})]}
+      this.finalForm = tfGenerateSchema(
+        this,
+        hook,
+        "okta_event_hook",
+        Object.keys(this)
+      )
+      this.terraformId = tfId(hook)
+    }
+  }
+
+
+
+
+  // resource "okta_event_hook" "example" {
+  //   name    = "example"
+  //   events  = [
+  //     "user.lifecycle.create",
+  //     "user.lifecycle.delete.initiated",
+  //   ]
+  
+  //   channel = {
+  //     type    = "HTTP"
+  //     version = "1.0.0"
+  //     uri     = "https://example.com/test"
+  //   }
+  
+  //   auth = {
+  //     type  = "HEADER"
+  //     key   = "Authorization"
+  //     value = "123"
+  //   }
+  // }
+
+
+  // resource "okta_inline_hook" "example" {
+  //   name    = "example"
+  //   version = "1.0.1"
+  //   type    = "com.okta.oauth2.tokens.transform"
+  
+  //   channel = {
+  //     version = "1.0.0"
+  //     uri     = "https://example.com/test"
+  //     method  = "POST"
+  //   }
+  
+  //   auth = {
+  //     key   = "Authorization"
+  //     type  = "HEADER"
+  //     value = "secret"
+  //   }
+  // }
+
   // resource okta_policy_rule_idp_discovery test {
   //   policyid             = "${data.okta_policy.test.id}"
   //   priority             = 1
@@ -602,6 +683,12 @@ const init = async () => {
               break;
             case "groups/rules":
               return new GroupRule(this.modelJson);
+              break;
+            case "eventHooks":
+              return new EventHook(this.modelJson);
+              break;
+            case "inlineHooks":
+              return new InlineHook(this.modelJson);
               break;
             case "schemas":
               return new SchemaAttribute(this.modelJson);

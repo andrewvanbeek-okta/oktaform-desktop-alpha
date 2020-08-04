@@ -750,6 +750,8 @@ export default {
         "trustedOrigins",
         "policies?type=PASSWORD",
         "policies?type=IDP_DISCOVERY",
+        "inlineHooks",
+        "eventHooks"
       ];
       resources.forEach(async function (rez) {
         component.resources[rez] = [];
