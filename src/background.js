@@ -574,6 +574,9 @@ const init = async () => {
             case "OKTA_SIGN_ON":
               return new SignOnPolicy(this.modelJson);
               break;
+            case "PASSWORD":
+              return new PasswordPolicy(this.modelJson);
+              break;
             case "SIGN_ON":
               return new SignOnRule(this.modelJson);
               break;
