@@ -87,7 +87,12 @@
               <form class="contact-form">
                 <md-field maxlength="20">
                   <label>Name Your File</label>
-                  <md-input v-model="filename"></md-input>
+                  <md-input style="text-align: center;" v-model="filename"></md-input>
+                </md-field>
+                <md-field style="text-align: center;">
+                <label>Description</label>
+                <md-textarea style="text-align: center; font-size:80px;" md-counter="100" v-model="migrationDescription"></md-textarea>
+                  <md-icon>description</md-icon>
                 </md-field>
               </form>
               <br />
@@ -298,13 +303,11 @@
           </v-card-title>
           <v-card-text>About to automigrate Resources to Second Okta Tenant</v-card-text>
           <!-- <v-text-field label="Description of Migration" :rules="rules"></v-text-field> -->
-          <v-form ref="form" v-model="valid">
-            <v-text-field v-model="migrationDescription" :rules="rules" label="Description of Migration" required></v-text-field>
-            <md-button :disabled="!valid" :right="true" @click="sendSelected()" class="md-danger">Generate</md-button>
-          </v-form>
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn color="red darken-1" text @click="warnAndConfirm = false">Close</v-btn>
+            <v-spacer></v-spacer>
+            <md-button :right="true" @click="sendSelected()" class="md-danger">Generate</md-button>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -457,7 +460,7 @@ export default {
       schema: false,
       singleSelect: false,
       valid: false,
-      migrationDescription: "",
+      migrationDescription: "No description provided yet!!",
       attributesAdded: [],
       attributesAddedHeaders: [],
       warnAndConfirm: false,
@@ -499,9 +502,7 @@ export default {
       render: false,
       files: [{ name: "test" }],
       rezources: [],
-     rules: [
-        v => !!v || 'Field is required'
-      ],
+      rules: [(v) => !!v || "Field is required"],
     };
   },
   methods: {
@@ -616,6 +617,7 @@ export default {
         .post(`http://localhost:8000/writeAll`, {
           resources: component.resources,
           items: allItems,
+          description: component.migrationDescription,
           filename: component.filename,
           foldername: component.tenantTwoConfig.split(".json")[0],
         })
@@ -655,11 +657,20 @@ export default {
     },
     appendToName(item, resource) {
       var component = this;
-      if (!item.name.includes(" from oktaform")) {
-        item.name = item.name + " from oktaform";
-      } else {
-        item.name = item.name.split(" from oktaform")[0];
+      if (item.name) {
+        if (!item.name.includes(" from oktaform")) {
+          item.name = item.name + " from oktaform";
+        } else {
+          item.name = item.name.split(" from oktaform")[0];
+        }
+      } else if (item.profile.name) {
+        if (!item.profile.name.includes(" from oktaform")) {
+          item.profile.name = item.profile.name + " from oktaform";
+        } else {
+          item.profile.name = item.profile.name.split(" from oktaform")[0];
+        }
       }
+
       component.deleteItem(item, resource);
       component.resources[resource].push(item);
       component.show();
@@ -843,6 +854,7 @@ export default {
     },
     async onSelect(item, resource) {
       var component = this;
+      console.log("this is selected below:");
       console.log(component.selected);
       if (!component.resources[resource].includes(item)) {
         if (resource != "idps") {
@@ -871,21 +883,23 @@ export default {
             component.resources[resource].length - 1
           ]["children"] = await children;
         }
+        if (item.name) {
+          if (item.name.toUpperCase().includes("DEFAULT") && item.system) {
+            component.resources[resource][
+              component.resources[resource].length - 1
+            ].name = "Oktaform:default: " + component.tenantOneName;
+          }
 
-        if (item.name.toUpperCase().includes("DEFAULT") && item.system) {
-          component.resources[resource][
-            component.resources[resource].length - 1
-          ].name = "Oktaform:default: " + component.tenantOneName;
-        }
-
-        if (item.name == "Idp Discovery Policy") {
-          component.defaultImport(item);
-        }
-        if (item.name.toUpperCase().includes("DEFAULT")) {
-          if (item._links.self.href.includes("authorizationServers")) {
+          if (item.name == "Idp Discovery Policy") {
             component.defaultImport(item);
           }
+          if (item.name.toUpperCase().includes("DEFAULT")) {
+            if (item._links.self.href.includes("authorizationServers")) {
+              component.defaultImport(item);
+            }
+          }
         }
+
         if (item.actions || item.conditions) {
           component.findIncludes(item);
         }

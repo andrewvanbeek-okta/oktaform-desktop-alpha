@@ -844,6 +844,7 @@ const init = async () => {
     var autogenerate = true
     //console.log(req.body)
     var filename = req.body.filename
+    var description = req.body.description || "no description provided"
     filename = filename += new Date().toString().trim()
     var itemsToWrite = [];
     var resources = req.body.resources;
@@ -921,7 +922,7 @@ const init = async () => {
         });
       }
       if (index === (array.length - 1)) {
-        fs.appendFileSync(supportpath + foldername + "/" + filename + ".tf", "\n # this is a description of what this tf file does!", function (err) {
+        fs.appendFileSync(supportpath + foldername + "/" + filename + ".tf", "\n #" + description, function (err) {
           if (err)
             throw err;
         });
