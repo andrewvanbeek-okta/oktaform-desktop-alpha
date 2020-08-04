@@ -125,8 +125,10 @@ const init = async () => {
     return body;
   };
 
+
+  //double 
   var tfGenerateSchema = function (model, fullObject, resource, keys) {
-    var name = fullObject.title
+    var name = fullObject.name || fullObject.profile.name
     name = name.replace(/[^a-zA-Z ]/g, "")
     console.log(name)
     console.log(fullObject)
@@ -134,7 +136,7 @@ const init = async () => {
       "resource " +
       JSON.stringify(resource) +
       " " +
-      JSON.stringify(name.replace(/\s+/g, '') + fullObject.index);
+      JSON.stringify(name.replace(/\s+/g, '') + fullObject.id);
     var body = header + " {\n";
     keys.forEach(function (key) {
       var keyvalue = "";
@@ -143,7 +145,25 @@ const init = async () => {
       } else {
         keyvalue = JSON.stringify(model[key]);
       }
-      body = body + String(key) + " = " + keyvalue + "\n";
+      console.log(model[key])
+      if(getSafe(() => model[key]["multiple"])) {
+        console.log("HEREEEEEEE if not mu")
+        console.log(getSafe(() => model[key]["multiple"]))
+        console.log("HEREEEEEEE")
+        model[key]["values"].forEach(function(value) {
+          body = body + String(key) + value + "\n";
+        })
+      }
+      else if(model[key] != "xxoktaform:nothing-herexx") {
+        console.log("HEREEEEEEE if not undefined")
+        console.log(model[key])
+        console.log("HEREEEEEEE")
+        body = body + String(key) + " = " + keyvalue + "\n";
+      } else {
+        console.log("HEREEEEEEE")
+        console.log(model[key])
+        console.log("HEREEEEEEE")
+      }
     });
     body = body + "}\n";
     return body;
@@ -166,6 +186,23 @@ const init = async () => {
 
   var filterList = function (items, filter) {
     return items.map(function (item) { return item[filter] })
+  }
+
+  var convertCamelCase = function(string){
+   return string.replace(/\.?([A-Z])/g, function (x,y){return "_" + y.toLowerCase()}).replace(/^_/, "")
+  }
+
+  var fancyObject = function(object) {
+    var contents = ``
+    for (var key in object) {
+      if (object.hasOwnProperty(key)) {
+          contents += `${convertCamelCase(key)} = "${object[key]}"`
+          contents += "\n"
+      }
+    }
+    return `{
+      ${contents}
+    }`
   }
 
   class OauthApp {
@@ -475,6 +512,43 @@ const init = async () => {
     }
   }
 
+  class IdpDiscoveryPolicyRule {
+    constructor(rule) {
+      this.status = rule.status;
+      this.name = rule.name;
+      this.policyid = "${data.okta_policy.discovery.id}"
+      this.idp_type = rule.actions.idp.providers[0].type || "OIDC"
+      this.idp_id = rule.idpIds[0]
+      this.user_identifier_type = getSafe(() => rule.conditions.userIdentifier.type) || "xxoktaform:nothing-herexx"
+      this.user_identifier_attribute = getSafe(() => rule.conditions.userIdentifier.attribute) || "xxoktaform:nothing-herexx"
+      this.user_identifier_patterns = {multiple: true, values: rule.conditions.userIdentifier.patterns.map(function(oj) {return fancyObject(oj)})}
+      this.finalForm = tfGenerateSchema(
+        this,
+        rule,
+        "okta_policy_rule_idp_discovery",
+        Object.keys(this)
+      )
+      this.terraformId = tfId(rule)
+    }
+  }
+
+  // resource okta_policy_rule_idp_discovery test {
+  //   policyid             = "${data.okta_policy.test.id}"
+  //   priority             = 1
+  //   name                 = "testAcc_replace_with_uuid"
+  //   idp_type             = "SAML2"
+  //   idp_id               = "${okta_idp_saml.test.id}"
+  //   user_identifier_type = "ATTRIBUTE"
+  
+  //   // Don't have a company schema in this account, just chosing something always there
+  //   user_identifier_attribute = "firstName"
+  
+  //   user_identifier_patterns {
+  //     match_type = "EQUALS"
+  //     value      = "Articulate"
+  //   }
+  // }
+
   class ModelCreator {
     constructor(json) {
       this.modelType = json.type;
@@ -515,6 +589,8 @@ const init = async () => {
             case "trustedOrigins":
               return new TrustedOrigin(this.modelJson);
               break;
+            case "IDP_DISCOVERY": 
+              return new IdpDiscoveryPolicyRule(this.modelJson)
             case "FACEBOOK":
               return new SocialIdp(this.modelJson);
               break;
@@ -665,6 +741,12 @@ const init = async () => {
           oktaJson.groups.forEach(function (group) {
             var groupModel = new ModelCreator({ type: "groups", resource: group })
             itemsToWrite.push(groupModel.model.finalForm)
+          })
+        }
+        if (oktaJson.idps) {
+          oktaJson.idps.forEach(function (idp) {
+            var idpModel = new ModelCreator({ type: idp.type, resource: idp })
+            itemsToWrite.push(idpModel.model.finalForm)
           })
         }
       });

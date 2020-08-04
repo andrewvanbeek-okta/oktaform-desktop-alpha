@@ -932,7 +932,8 @@ export default {
         });
         console.log(item.idps)
         item.idpIds = item.idps.map(function (item) {
-          return "${okta_group." + tfId(item) + ".id}";
+          var idpTypes = {"OIDC": "okta_idp_oidc.", "SAML2": "okta_idp_saml.", "FACEBOOK": "okta_idp_social.", "GOOGLE": "okta_idp_social."}
+          return "${" + idpTypes[item.type] + tfId(item) + ".id}";
         });
         console.log(item.idpIds)
       }
