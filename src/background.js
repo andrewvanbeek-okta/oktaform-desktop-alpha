@@ -914,6 +914,7 @@ const init = async () => {
       console.log("CHECK")
       content = content.toString().trim()
       if (!content.includes(item.toString().trim())) {
+        filename = filename += new Date().toString().trim()
         fs.appendFileSync(supportpath + foldername + "/" + filename + ".tf", item, function (err) {
           if (err)
             throw err;
