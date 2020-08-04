@@ -844,6 +844,7 @@ const init = async () => {
     var autogenerate = true
     //console.log(req.body)
     var filename = req.body.filename
+    filename = filename += new Date().toString().trim()
     var itemsToWrite = [];
     var resources = req.body.resources;
     var foldername = req.body.foldername
@@ -914,13 +915,16 @@ const init = async () => {
       console.log("CHECK")
       content = content.toString().trim()
       if (!content.includes(item.toString().trim())) {
-        filename = filename += new Date().toString().trim()
         fs.appendFileSync(supportpath + foldername + "/" + filename + ".tf", item, function (err) {
           if (err)
             throw err;
         });
       }
       if (index === (array.length - 1)) {
+        fs.appendFileSync(supportpath + foldername + "/" + filename + ".tf", "\n # this is a description of what this tf file does!", function (err) {
+          if (err)
+            throw err;
+        });
         // This is the last one.
         if (autogenerate) {
           var util = require('util'),

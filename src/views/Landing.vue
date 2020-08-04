@@ -211,11 +211,10 @@
           </div>
         </div>
       </div>
-      <md-button v-on:click="sendSelected()" class="md-danger">Generate</md-button>
+      <md-button v-on:click="warnAndConfirm = true" class="md-danger">Generate</md-button>
       <modal name="hello-world" :adaptive="true" :scrollable="true" width="80%" height="auto">
         <div v-for="(table, i) in addedTables" v-if="renderComponent" class="full-table">
           <h3>{{addedTables[i].title}}</h3>
-
           <v-data-table
             :headers="addedTables[i].headers"
             :items="addedTables[i].respData"
@@ -289,6 +288,20 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn color="green darken-1" text @click="resetPage()">Close</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-dialog v-model="warnAndConfirm" width="600px">
+        <v-card>
+          <v-card-title>
+            <span class="headline">Confirm</span>
+          </v-card-title>
+          <v-card-text>About to automigrate Resources to Second Okta Tenant</v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="green darken-1" text @click="sendSelected()">Conifrm</v-btn>
+            <v-spacer></v-spacer>
+            <v-btn color="red darken-1" text @click="warnAndConfirm = false">Close</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -442,6 +455,7 @@ export default {
       singleSelect: false,
       attributesAdded: [],
       attributesAddedHeaders: [],
+      warnAndConfirm: false,
       schemaTable: false,
       search: "",
       policies: [],
