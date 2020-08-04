@@ -751,7 +751,8 @@ export default {
         "policies?type=PASSWORD",
         "policies?type=IDP_DISCOVERY",
         "inlineHooks",
-        "eventHooks"
+        "eventHooks",
+        "zones"
       ];
       resources.forEach(async function (rez) {
         component.resources[rez] = [];

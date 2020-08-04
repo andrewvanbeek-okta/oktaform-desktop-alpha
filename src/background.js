@@ -100,6 +100,28 @@ const init = async () => {
     }
   }
 
+  function getSafeArray(array) {
+    if(Array.isArray(array)) {
+      return array
+    }
+    else {
+      return []
+    }
+  }
+
+  function simplifyItems(items, filter){
+    if(Array.isArray(items)) {
+      var array = items.map(function(item) { return item[filter]})
+      if(!array.includes(undefined)) {
+        return addArray(array)
+      } else {
+        return "xxoktaform:nothing-herexx"
+      }
+    } else {
+      return "xxoktaform:nothing-herexx"
+    }
+  }
+
 
   var tfGenerate = function (model, fullObject, resource, keys) {
     var name = fullObject.name || fullObject.profile.name
@@ -571,6 +593,31 @@ const init = async () => {
     }
   }
 
+  class NetworkZone {
+    constructor(zone) {
+      this.name = zone.name;
+      this.type = zone.type
+      this.gateways = simplifyItems(zone.gateways, "value")
+      this.proxies = simplifyItems(zone.proxies, "value")
+      this.locations = simplifyItems(zone.locations, "country")
+      this.finalForm = tfGenerateSchema(
+        this,
+        zone,
+        "okta_network_zone",
+        Object.keys(this)
+      )
+      this.terraformId = tfId(zone)
+    }
+  }
+
+
+  // resource "okta_network_zone" "example" {
+  //   name     = "example"
+  //   type     = "IP"
+  //   gateways = ["1.2.3.4/24", "2.3.4.5-2.3.4.15"]
+  //   proxies  = ["2.2.3.4/24", "3.3.4.5-3.3.4.15"]
+  // }
+
 
 
 
@@ -630,6 +677,8 @@ const init = async () => {
   //   }
   // }
 
+  
+
   class ModelCreator {
     constructor(json) {
       this.modelType = json.type;
@@ -683,6 +732,9 @@ const init = async () => {
               break;
             case "groups/rules":
               return new GroupRule(this.modelJson);
+              break;
+            case "zones":
+              return new NetworkZone(this.modelJson);
               break;
             case "eventHooks":
               return new EventHook(this.modelJson);
