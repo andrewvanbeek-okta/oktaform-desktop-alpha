@@ -294,12 +294,15 @@
       <v-dialog v-model="warnAndConfirm" width="600px">
         <v-card>
           <v-card-title>
-            <span class="headline">Confirm</span>
+            <span class="headline">Confirm Migration</span>
           </v-card-title>
           <v-card-text>About to automigrate Resources to Second Okta Tenant</v-card-text>
+          <!-- <v-text-field label="Description of Migration" :rules="rules"></v-text-field> -->
+          <v-form ref="form" v-model="valid">
+            <v-text-field v-model="migrationDescription" :rules="rules" label="Description of Migration" required></v-text-field>
+            <md-button :disabled="!valid" :right="true" @click="sendSelected()" class="md-danger">Generate</md-button>
+          </v-form>
           <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="green darken-1" text @click="sendSelected()">Conifrm</v-btn>
             <v-spacer></v-spacer>
             <v-btn color="red darken-1" text @click="warnAndConfirm = false">Close</v-btn>
           </v-card-actions>
@@ -453,6 +456,8 @@ export default {
       resources: {},
       schema: false,
       singleSelect: false,
+      valid: false,
+      migrationDescription: "",
       attributesAdded: [],
       attributesAddedHeaders: [],
       warnAndConfirm: false,
@@ -494,6 +499,9 @@ export default {
       render: false,
       files: [{ name: "test" }],
       rezources: [],
+     rules: [
+        v => !!v || 'Field is required'
+      ],
     };
   },
   methods: {
@@ -766,7 +774,7 @@ export default {
         "policies?type=IDP_DISCOVERY",
         "inlineHooks",
         "eventHooks",
-        "zones"
+        "zones",
       ];
       resources.forEach(async function (rez) {
         component.resources[rez] = [];
@@ -933,26 +941,33 @@ export default {
           return "${okta_group." + tfId(item) + ".id}";
         });
       } else {
-        console.log(await itemType[item.type])
-        resourcesToAdd = await itemType[item.type].tobeAdded.map(function(idp) {
-          return idp.id
-        })
-         var idps = await this.tables.find(function (resource) {
+        console.log(await itemType[item.type]);
+        resourcesToAdd = await itemType[item.type].tobeAdded.map(function (
+          idp
+        ) {
+          return idp.id;
+        });
+        var idps = await this.tables.find(function (resource) {
           return resource.title === itemType[item.type].type;
         });
-        console.log("find this")
-        console.log(resourcesToAdd)
-        console.log(idps)
-        console.log("find this")
+        console.log("find this");
+        console.log(resourcesToAdd);
+        console.log(idps);
+        console.log("find this");
         item.idps = idps.respData.filter(function (resource) {
           return resourcesToAdd.includes(resource.id);
         });
-        console.log(item.idps)
+        console.log(item.idps);
         item.idpIds = item.idps.map(function (item) {
-          var idpTypes = {"OIDC": "okta_idp_oidc.", "SAML2": "okta_idp_saml.", "FACEBOOK": "okta_idp_social.", "GOOGLE": "okta_idp_social."}
+          var idpTypes = {
+            OIDC: "okta_idp_oidc.",
+            SAML2: "okta_idp_saml.",
+            FACEBOOK: "okta_idp_social.",
+            GOOGLE: "okta_idp_social.",
+          };
           return "${" + idpTypes[item.type] + tfId(item) + ".id}";
         });
-        console.log(item.idpIds)
+        console.log(item.idpIds);
       }
 
       return resourcesToAdd;
