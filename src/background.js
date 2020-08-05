@@ -1144,11 +1144,23 @@ const init = async () => {
           console.log(directory_path + "/" + file)
           var timestamp = fs.statSync(directory_path + "/" + file).mtime.getTime()
           const date = new Date(timestamp);
-          return { name: file, timestamp: date, folder: name }
+          return { name: file, timestamp: date, folder: name}
         })
+        
         res.send({ files: targetFiles })
       }
     })
+  })
+
+  app.get("/description", async function(req, res) {
+    console.log(req.query.name)
+    var filename = decodeURIComponent(req.query.name)
+    var folder = req.query.path + "/"
+  
+    var description = await getFileContents(folder + filename)
+    console.log(description)
+    description = description.split("#")[1] || "No Descriptions"
+    res.send({description: description})
   })
 
 

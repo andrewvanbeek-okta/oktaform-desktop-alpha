@@ -90,8 +90,12 @@
                   <md-input style="text-align: center;" v-model="filename"></md-input>
                 </md-field>
                 <md-field style="text-align: center;">
-                <label>Description</label>
-                <md-textarea style="text-align: center; font-size:80px;" md-counter="100" v-model="migrationDescription"></md-textarea>
+                  <label>Description</label>
+                  <md-textarea
+                    style="text-align: center; font-size:80px;"
+                    md-counter="100"
+                    v-model="migrationDescription"
+                  ></md-textarea>
                   <md-icon>description</md-icon>
                 </md-field>
               </form>
@@ -272,6 +276,11 @@
             </md-table-toolbar>
             <md-table-row slot-scope="{ item }" slot="md-table-row">
               <md-table-cell md-label="Name">{{ item.name }}</md-table-cell>
+              <md-table-cell md-label="view file description" md-sort-by="name">
+                <md-button v-on:click="showDescription(item)" class="md-icon-button">
+                  <md-icon>show</md-icon>
+                </md-button>
+              </md-table-cell>
               <md-table-cell
                 md-label="Delete File and destroy resources in tenant "
                 md-sort-by="name"
@@ -914,6 +923,12 @@ export default {
         resource: item,
         type: item._links.self.href.split("v1/")[1].split("/")[0],
       });
+    },
+    async showDescription(file) {
+      var getDescription = await this.$http.get(
+        "http://localhost:8000/description?name=" + file.name + "&path=" + file.folder
+      );
+      console.log(getDescription.data.description);
     },
     async findIncludes(item) {
       //type group_rule, IDP_DISCOVERY, OKTA_SIGN_ON, PASSWORD
