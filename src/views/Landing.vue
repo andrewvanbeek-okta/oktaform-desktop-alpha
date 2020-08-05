@@ -155,14 +155,6 @@
                   <md-button v-on:click="pullResources()" class="md-danger">Get Okta Config</md-button>
                 </div>
               </div>
-              <!-- <v-text-field
-                v-model="search"
-                append-icon="search"
-                label="Search"
-                single-line
-                hide-details
-              ></v-text-field>-->
-
               <center></center>
               <vue-tabs>
                 <v-tab v-for="(table, i) in tables" v-if="renderComponent" :title="tables[i].title">
@@ -278,7 +270,7 @@
               <md-table-cell md-label="Name">{{ item.name }}</md-table-cell>
               <md-table-cell md-label="view file description" md-sort-by="name">
                 <md-button v-on:click="showDescription(item)" class="md-icon-button">
-                  <md-icon>show</md-icon>
+                  <md-icon>info</md-icon>
                 </md-button>
               </md-table-cell>
               <md-table-cell
@@ -329,17 +321,19 @@
             Oktaform has detected that the user schemas from Okta tenant Two are missing values from Okta tenant One,
             <strong>WARNING If you click resolve you will automatically resolve the differences and adding the missing schema properties, this action cannot not be reverted via Oktaform. Additionally if you have issues CHECK THAT THE SAME FEATURES ARE ENABLED</strong>
           </v-card-text>
-          <v-card-actions>
+          <v-card-actions class="text-right">
             <v-spacer></v-spacer>
-            <v-btn color="green darken-1" text @click="resolveSchema()">resolve</v-btn>
-            <v-btn color="green darken-1" text @click="schema = false">Close</v-btn>
+            <center>
+            <v-btn class="centered" color="green darken-1" :right="true" text @click="resolveSchema()">resolve</v-btn>
+            <v-btn class="centered" color="green darken-1" :right="true" text @click="schema = false">Close</v-btn>
+            </center>
           </v-card-actions>
         </v-card>
       </v-dialog>
       <v-dialog v-model="schemaTable" width="600px">
         <v-card>
           <v-card-title>
-            <span class="headline">Attributes Added</span>
+            <span class="headline">Attributes Missing in Second Tenant</span>
           </v-card-title>
           <v-data-table
             :headers="attributesAddedHeaders"
@@ -348,6 +342,7 @@
             class="elevation-1"
           ></v-data-table>
           <v-card-actions>
+             <v-btn color="green darken-1" text @click="pushSchemaChange()">resolve</v-btn>
             <v-btn color="green darken-1" text @click="schemaTable = false">Close</v-btn>
           </v-card-actions>
         </v-card>
@@ -501,6 +496,7 @@ export default {
       classicModal: true,
       classicModalHide: false,
       rules: [],
+      missingProperties: {},
       serverResponse: "",
       oktaTenantOneUrl: "",
       oktaTenantOneApiToken: "",
@@ -750,6 +746,7 @@ export default {
         tenantTwo: this.tenantTwoConfig,
       });
       console.log(setConfig.data);
+      component.missingProperties = setConfig.data.missingProperties
       component.attributesAdded = Object.values(
         setConfig.data.missingProperties
       );
@@ -763,7 +760,16 @@ export default {
         { text: "type", value: "type" },
       ];
       component.schema = false;
-      component.schemaTable = true;
+      if(component.attributesAdded.length >= 1) {
+         component.schemaTable = true;
+      }
+    },
+    async pushSchemaChange() {
+        var setConfig = await this.$http.post("http://localhost:8000/schema", {
+        tenantTwo: this.tenantTwoConfig,
+        properties: this.missingProperties
+      });
+      console.log(setConfig.data)
     },
     async applyEnvironmentTwo() {
       this.tenantTwoName = this.tenantTwoConfig
@@ -775,7 +781,7 @@ export default {
       );
       //this.defaultImport()
       console.log(setConfig);
-      this.schema = true;
+      this.resolveSchema()
     },
     async pullResources() {
       this.tenantOneName = this.tenantOneConfig

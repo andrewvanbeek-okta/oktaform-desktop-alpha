@@ -994,6 +994,37 @@ const init = async () => {
         missingProperties[key] = tenantOneSchema[key]
       }
     }
+    // var modifiedSchema = {
+    //   "definitions": {
+    //     "custom": {
+    //       "id": "#custom",
+    //       "type": "object",
+    //       "required": []
+    //     }
+    //   }
+    // }
+    // modifiedSchema.definitions.custom.properties = missingProperties
+    // var data = modifiedSchema
+    // var update = await axios.post(tenantTwoUrl + "/api/v1/meta/schemas/user/default", data, {headers: tenantTwoHeaders}).catch(function (error) {
+    //   console.log(error)
+    // })
+ 
+
+
+    res.send({ schemaOne: tenantOneSchema, schemaTwo: tenantTwoSchema, missingProperties: missingProperties })
+  })
+
+  app.post("/schema", async function(req, res){
+    console.log(req.body)
+    var oktaConfigTenantTwo = await getEnvironment(req.body.tenantTwo)
+    var tenantTwoUrl = oktaConfigTenantTwo.url
+    var tenantTwoToken = oktaConfigTenantTwo.apiToken
+    var tenantTwoHeaders = {
+      "Cache-Control": "no-cache",
+      Authorization: "SSWS " + tenantTwoToken,
+      "Content-Type": "application/json",
+      Accept: "application/json"
+    }
     var modifiedSchema = {
       "definitions": {
         "custom": {
@@ -1003,16 +1034,14 @@ const init = async () => {
         }
       }
     }
-    modifiedSchema.definitions.custom.properties = missingProperties
+    modifiedSchema.definitions.custom.properties = req.body.properties
     var data = modifiedSchema
     var update = await axios.post(tenantTwoUrl + "/api/v1/meta/schemas/user/default", data, {headers: tenantTwoHeaders}).catch(function (error) {
       console.log(error)
     })
     console.log(update)
     console.log(update.data)
-
-
-    res.send({ schemaOne: tenantOneSchema, schemaTwo: tenantTwoSchema, missingProperties: missingProperties })
+    res.send({missingProperties: req.body.properties})
   })
 
   app.get("/resource", async function (req, res) {
