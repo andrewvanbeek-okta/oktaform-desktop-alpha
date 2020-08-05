@@ -358,6 +358,12 @@
           <atom-spinner :animation-duration="1000" :size="60" :color="'#ff1d5e'" />
         </center>
       </modal>
+      <modal name="description" :adaptive="true" :scrollable="true" width="50%" height="auto">
+        <center>
+          <h3>Your file Description </h3>
+          <h4>{{fileDescription}}</h4>
+        </center>
+      </modal>
       <modal name="create_config" :adaptive="true" :scrollable="true" width="50%" height="auto">
         <form class="contact-form">
           <div class="md-layout">
@@ -469,6 +475,7 @@ export default {
       schema: false,
       singleSelect: false,
       valid: false,
+      fileDescription: "",
       migrationDescription: "No description provided yet!!",
       attributesAdded: [],
       attributesAddedHeaders: [],
@@ -929,6 +936,8 @@ export default {
         "http://localhost:8000/description?name=" + file.name + "&path=" + file.folder
       );
       console.log(getDescription.data.description);
+      this.fileDescription = getDescription.data.description
+         this.$modal.show("description");
     },
     async findIncludes(item) {
       //type group_rule, IDP_DISCOVERY, OKTA_SIGN_ON, PASSWORD
