@@ -508,11 +508,10 @@ const init = async () => {
     constructor(rule) {
       this.status = rule.status;
       this.name = rule.name;
-      this.description = rule.description;
       this.priority = rule.priority;
-      this.group_whitelist = ["${data.okta_group.all.id}"];
+      this.group_whitelist = ["${data.okta_group.everyone.id}"];
       this.grant_type_whitelist = rule.conditions.grantTypes.include;
-      this.policy_id = "${okta_auth_server." + rule.resourceName + ".id}";
+      this.policy_id = "${okta_auth_server_policy." + rule.resourceName + ".id}";
       this.auth_server_id = "${okta_auth_server." + rule.parentid + ".id}";
       this.finalForm = tfGenerate(
         this,
@@ -878,6 +877,14 @@ const init = async () => {
               child.parentid = fullModel.model.terraformId
               var childModel = new ModelCreator({ type: childType, resource: child })
               itemsToWrite.push(childModel.model.finalForm)
+              if(child.rules){
+                child.rules.children.forEach(function(rule) {
+                  rule.parentid = child.parentid
+                  rule.resourceName = childModel.model.terraformId
+                  var ruleModel = new ModelCreator({ type: child.rules.type, resource: rule })
+                  itemsToWrite.push(ruleModel.model.finalForm)
+                })
+              }
             })
           })
         }

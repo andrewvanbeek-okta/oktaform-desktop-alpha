@@ -805,6 +805,7 @@ export default {
         "trustedOrigins",
         "policies?type=PASSWORD",
         "policies?type=IDP_DISCOVERY",
+        "policies?type=OAUTH_AUTHORIZATION_POLICY",
         "inlineHooks",
         "eventHooks",
         "zones",
@@ -873,6 +874,24 @@ export default {
             console.log(error);
           });
       });
+    },
+    async getChildrensChildren(item){
+       if (item._links) {
+            var links = Object.keys(item._links)
+            .filter(function (link) {
+              return (
+                link.toString() == "claims" ||
+                link.toString() == "scopes" ||
+                link.toString() == "rules" ||
+                link.toString() == "policies"
+              );
+            })
+            .map(function (filteredlink) {
+              return item._links[filteredlink].href;
+            });
+          var children = await component.getChildrenCollection(links);
+          item.children = children
+       }
     },
     async onSelect(item, resource) {
       var component = this;
@@ -1022,6 +1041,7 @@ export default {
         links.map(async function (link) {
           var child = await component.getChildrenModels(link);
           var type = child.type || link.split("/")[link.split("/").length - 1];
+          //component.getChildrensChildren
           return { type: type, childObjects: child.children };
         })
       );
@@ -1039,7 +1059,18 @@ export default {
       var children = getChild.data.children.filter(function (childResource) {
         return !childResource.system;
       });
-      return { type: getChild.data.type, children: children };
+      if(getChild.data.type == "OAUTH_AUTHORIZATION_POLICY") {
+        //will have check logic here some day
+        children = Promise.all(children.map(async function(kid){
+          var rules = await component.getChildrenModels(kid._links.rules.href)
+          kid.rules = rules
+          return kid
+        })
+        )
+        return { type: getChild.data.type, children: await children };
+      } else {
+            return { type: getChild.data.type, children: children };
+      }
     },
     getAlternateLabel(count) {
       let plural = "";
