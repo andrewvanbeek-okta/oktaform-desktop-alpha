@@ -435,6 +435,7 @@ const init = async () => {
       this.name = claim.name;
       this.value_type = claim.valueType;
       this.value = claim.value;
+      this.scopes = addArray(claim.conditions.scopes)
       this.claim_type = claim.claimType;
       this.auth_server_id = "${okta_auth_server." + claim.parentid + ".id}";
       this.group_filter_type = claim.group_filter_type
