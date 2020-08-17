@@ -232,6 +232,10 @@ const init = async () => {
     }`
   }
 
+  var generateJson = function(object) {
+    
+  } 
+
   class OauthApp {
     constructor(app) {
       this.label = app.label;
@@ -245,6 +249,38 @@ const init = async () => {
       this.terraformId = tfId(app)
     }
   }
+
+  class SamlApp {
+    constructor(app) {
+      this.label = app.label;
+      this.preconfigured_app = app.name
+      this.finalForm = tfGenerate(this, app, "okta_app_saml", Object.keys(this));
+      this.terraformId = tfId(app)
+    }
+  }
+
+
+  // resource "okta_app_saml" "example" {
+  //   label                    = "example"
+  //   sso_url                  = "http://example.com"
+  //   recipient                = "http://example.com"
+  //   destination              = "http://example.com"
+  //   audience                 = "http://example.com/audience"
+  //   subject_name_id_template = "$${user.userName}"
+  //   subject_name_id_format   = "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"
+  //   response_signed          = true
+  //   signature_algorithm      = "RSA_SHA256"
+  //   digest_algorithm         = "SHA256"
+  //   honor_force_authn        = false
+  //   authn_context_class_ref  = "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport"
+  
+  //   attribute_statements {
+  //     type         = "GROUP"
+  //     name         = "groups"
+  //     filter_type  = "REGEX"
+  //     filter_value = ".*"
+  //   }
+  // }
 
   // resource "okta_user_schema" "example" {
   //   index       = "customPropertyName"
@@ -695,6 +731,12 @@ const init = async () => {
             case "apps":
               return new OauthApp(this.modelJson);
               break;
+            case "OAUTH2":
+              return new OauthApp(this.modelJson)
+              break
+              case "SAML":
+                return new SamlApp(this.modelJson)
+                break
             case "OAUTH_AUTHORIZATION_POLICY":
               return new AuthPolicy(this.modelJson);
               break;
@@ -941,13 +983,12 @@ const init = async () => {
           exec('terraform init && terraform apply -lock=false -auto-approve', {
             cwd: supportpath + foldername
           }, function (error, stdout, stderr) {
-            // work with result
-            console.log(error);
-            console.log(stdout);
-            console.log(stderr);
+            // work with result   
             if (stdout) {
+              console.log(stdout)
               res.send({ message: stdout })
             } else {
+              console.log(stderr);
               res.send({ message: stderr })
             }
 
@@ -1099,7 +1140,8 @@ const init = async () => {
     request(options, function (error, response, body) {
       if (error) throw new Error(error);
       var oauthApplications = []
-      if (req.body.resource == "apps") {
+      var samlApplications = []
+      if (req.body.resource == "apps?type=OAUTH2") {
         var arrayBody = JSON.parse(body)
         arrayBody.forEach(function (app) {
           if (app.settings.oauthClient) {
@@ -1108,6 +1150,15 @@ const init = async () => {
         })
         console.log(oauthApplications)
         res.send(oauthApplications)
+        //res.send(body)
+      } else if(req.body.resource == "apps?type=SAML") {
+        var arrayBody = JSON.parse(body)
+        arrayBody.forEach(function (app) {
+          if (app.signOnMode == "SAML_2_0") {
+            samlApplications.push(app)
+          }
+        })
+        res.send(samlApplications)
       } else {
         res.send(body);
       }
@@ -1184,7 +1235,7 @@ const init = async () => {
           return { name: file, timestamp: date, folder: name}
         })
         
-        res.send({ files: targetFiles })
+        res.send({ files: targetFiles, folderLocation: directory_path})
       }
     })
   })

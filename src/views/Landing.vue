@@ -254,6 +254,7 @@
       <modal name="folder_files" :adaptive="true" :scrollable="true" width="80%" height="auto">
         <div v-if="renderComponent" class="full-table">
           <h1>Delete Models and Files</h1>
+          <h4>To view folders directly copy and paste this in your terminal<strong>cd "{{folderLocation}}"</strong></h4>
           <md-table v-model="files" md-sort="timestamp" md-sort-order="asc" md-card>
             <md-table-toolbar>
               <h1 class="md-title">With auto select and alternate headers</h1>
@@ -477,6 +478,7 @@ export default {
       warnAndConfirm: false,
       schemaTable: false,
       search: "",
+      folderLocation: "",
       policies: [],
       dialog: false,
       badUrl: false,
@@ -601,6 +603,7 @@ export default {
         "http://localhost:8000/files?name=" + name
       );
       this.files = getFiles.data.files;
+      this.folderLocation = getFiles.data.folderLocation
       this.$modal.show("folder_files");
     },
     hide() {
@@ -795,7 +798,8 @@ export default {
         "groups",
         "groups/rules",
         "authorizationServers",
-        "apps",
+        "apps?type=OAUTH2",
+        "apps?type=SAML",
         "policies?type=OKTA_SIGN_ON",
         "idps",
         "idps?type=OIDC",
