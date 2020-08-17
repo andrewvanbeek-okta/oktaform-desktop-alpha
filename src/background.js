@@ -985,9 +985,25 @@ const init = async () => {
           }, function (error, stdout, stderr) {
             // work with result   
             if (stdout) {
-              console.log(stdout)
-              res.send({ message: stdout })
+              //console.log(stdout)
+              console.log("this is success")
+              console.log(error)
+              var applySuccess = stdout.includes("Apply complete!")
+              var didApply = `The result of apply being successful: ${applySuccess}`
+              console.log(didApply)
+              console.log("MESSAGE BELOW")
+              var message = ""
+              if(applySuccess) {
+                var tfmessageFragements = stdout.split("Apply complete!")
+                message = tfmessageFragements[tfmessageFragements.length - 1]
+              } else {
+                message = `Oh no looks likes there is error with terraform file!  No worries just run the command via terraform to see the exact error so in this case: cd "${supportpath + foldername }" && terraform apply`
+              }
+              console.log(message)
+              res.send({ message: message })
             } else {
+              console.log("this is error")
+              console.log(error)
               console.log(stderr);
               res.send({ message: stderr })
             }

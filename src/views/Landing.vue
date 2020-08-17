@@ -59,9 +59,6 @@
             </md-speed-dial-target>
 
             <md-speed-dial-content>
-              <md-button v-on:click="getEnvironments()" class="md-danger md-round md-lg">
-                <md-icon>note</md-icon>List Environments
-              </md-button>
               <md-button v-on:click="showDelete()" class="md-danger md-round md-lg">
                 <md-icon>note</md-icon>List Terraform Files
               </md-button>
