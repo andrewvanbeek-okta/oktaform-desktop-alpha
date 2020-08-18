@@ -1099,7 +1099,7 @@ const init = async () => {
         }
       }
     }
-    modifiedSchema.definitions.custom.properties = req.body.properties
+    modifiedSchema.definitions.custom.properties = req.body.properties //{name: "favoritejello", type: "string"}
     var data = modifiedSchema
     var update = await axios.post(tenantTwoUrl + "/api/v1/meta/schemas/user/default", data, {headers: tenantTwoHeaders}).catch(function (error) {
       console.log(error)
@@ -1483,8 +1483,8 @@ const init = async () => {
 
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir);
-      fs.writeFileSync(supportpath + configDir + "/" + "init.tf", defaults)
-      fs.writeFileSync(supportpath + configDir + "/" + "default.tf", tfFile)
+      fs.writeFileSync(supportpath + configDir + "/" + "init.tf", tfFile)
+      fs.writeFileSync(supportpath + configDir + "/" + "default.tf", defaults)
       res.send({ message: "file was overwritten" })
     } else {
       fs.writeFileSync(supportpath + configDir + "/" + "default.tf", defaults);
