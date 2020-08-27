@@ -233,7 +233,9 @@ const init = async () => {
   }
 
   var generateJson = function(object) {
-    
+    return `<<EOT
+    ${object}
+    EOT`
   } 
 
   class OauthApp {
