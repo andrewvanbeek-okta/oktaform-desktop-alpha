@@ -4,6 +4,8 @@ const path = require('path')
 const isDevelopment = process.env.NODE_ENV !== 'production'
 const axios = require('axios');
 const fixPath = require('fix-path');
+var pem = require('pem')
+
 fixPath();
 
 
@@ -180,6 +182,9 @@ const init = async () => {
           body = body + String(key) + divider + value + "\n";
         })
       }
+      else if(model[key]["json"]) {
+        body = body + String(key) + model[key]["value"] + "\n"
+      }
       else if(model[key] != "xxoktaform:nothing-herexx") {
         console.log("HEREEEEEEE if not undefined")
         console.log(model[key])
@@ -233,9 +238,10 @@ const init = async () => {
   }
 
   var generateJson = function(object) {
-    return `<<EOT
-    ${object}
-    EOT`
+    console.log(object)
+    var stringObject = JSON.stringify(object)
+    console.log(stringObject)
+    return "= " + "<<EOT".trim() + "\n " + JSON.stringify(object) + "\n EOT"
   } 
 
   class OauthApp {
@@ -256,7 +262,8 @@ const init = async () => {
     constructor(app) {
       this.label = app.label;
       this.preconfigured_app = app.name
-      this.finalForm = tfGenerate(this, app, "okta_app_saml", Object.keys(this));
+      this.app_settings_json = {"json": true, "value": generateJson(app.settings.app)}
+      this.finalForm = tfGenerateSchema(this, app, "okta_app_saml", Object.keys(this));
       this.terraformId = tfId(app)
     }
   }
@@ -1416,6 +1423,7 @@ const init = async () => {
   })
 
   app.post("/migrationConfig", async function (req, res) {
+    pem.createCertificate({ days: 1, selfSigned: true }, async function (err, keys) {
     console.log("##########################################")
     var config = await getFileContents(req.body.name)
     console.log(config)
@@ -1435,7 +1443,8 @@ const init = async () => {
     // } else {
     //   dir = './' + supportpath + configDir
     // }
-    var samlCert = "${okta_app_saml.test.certificate}"
+    var samlCert = keys.certificate.split("-----BEGIN CERTIFICATE-----")[1].split("-----END CERTIFICATE-----")[0].toString().replace( /[\r\n]+/gm, "" )
+
     var nameTemplateID = "$${user.userName}"
     var defaults =
     `data "okta_group" "everyone" {
@@ -1461,21 +1470,6 @@ const init = async () => {
       type = "OKTA_SIGN_ON"
     }
 
-    resource okta_app_saml test {
-      label                    = "testAcc_replace_with_uuid"
-      sso_url                  = "http://google.com"
-      recipient                = "http://here.com"
-      destination              = "http://its-about-the-journey.com"
-      audience                 = "http://audience.com"
-      subject_name_id_template = "${nameTemplateID}"
-      subject_name_id_format   = "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"
-      response_signed          = true
-      signature_algorithm      = "RSA_SHA256"
-      digest_algorithm         = "SHA256"
-      honor_force_authn        = false
-      authn_context_class_ref  = "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport"
-    }
-
     resource okta_idp_saml_key test {
       x5c = ["${samlCert}"]
     }
@@ -1488,10 +1482,11 @@ const init = async () => {
       fs.writeFileSync(supportpath + configDir + "/" + "init.tf", tfFile)
       fs.writeFileSync(supportpath + configDir + "/" + "default.tf", defaults)
       res.send({ message: "file was overwritten" })
-    } else {
+    } else if(!fs.existsSync(supportpath + configDir + "/" + "default.tf")) {
       fs.writeFileSync(supportpath + configDir + "/" + "default.tf", defaults);
       res.send({ message: "file was overwritten" })
     }
+  })
   })
 
   // listen for requests :
