@@ -629,6 +629,7 @@ export default {
         .post(`http://localhost:8000/writeAll`, {
           resources: component.resources,
           items: allItems,
+          autogenerate: component.autogenerate,
           description: component.migrationDescription,
           filename: component.filename,
           foldername: component.tenantTwoConfig.split(".json")[0],

@@ -896,8 +896,9 @@ const init = async () => {
   };
 
   app.post("/writeAll", function (req, res) {
-    var autogenerate = true
-    //console.log(req.body)
+    console.log("here in write all")
+    var autogenerate = req.body.autogenerate
+    console.log(req.body)
     var filename = req.body.filename
     var description = req.body.description || "no description provided"
     filename = filename += new Date().toString().trim()
@@ -1023,11 +1024,9 @@ const init = async () => {
             }
 
           });
-
-          //res.download(supportpath + foldername + "/" + filename + ".tf");
         }
         else {
-          //res.download(supportpath + "oktaform.tf");
+          res.send({message: "Open you file by running: open -a 'TextEdit' '" + supportpath + foldername + "/" + filename + ".tf'"});
         }
       }
 
@@ -1278,7 +1277,14 @@ const init = async () => {
     var description = await getFileContents(folder + filename)
     console.log(description)
     description = description.split("#")[1] || "No Descriptions"
-    res.send({description: description})
+    console.log(supportpath)
+    //var viewInstructions = "to view contents you can open the file by running: open -a 'TextEdit' '" + supportpath + foldername + "/" + filename + ".tf'"
+    var fulldescription = `${description}
+    
+
+    To view the contents run this command in your terminal: open -a 'TextEdit' '${supportpath + folder + filename}'
+    `
+    res.send({description: fulldescription})
   })
 
 
