@@ -251,7 +251,7 @@
       <modal name="folder_files" :adaptive="true" :scrollable="true" width="80%" height="auto">
         <div v-if="renderComponent" class="full-table">
           <h1>Delete Models and Files</h1>
-          <h4>To view folders directly copy and paste this in your terminal<strong>cd "{{folderLocation}}"</strong></h4>
+          <h4>To view folders directly copy and paste this in your terminal<strong> cd "{{folderLocation}}"</strong></h4>
           <md-table v-model="files" md-sort="timestamp" md-sort-order="asc" md-card>
             <md-table-toolbar>
               <h1 class="md-title">With auto select and alternate headers</h1>
@@ -772,6 +772,7 @@ export default {
       console.log(setConfig.data)
     },
     async applyEnvironmentTwo() {
+       this.resolveSchema()
       this.tenantTwoName = this.tenantTwoConfig
         .split("oktaform_env_")[1]
         .split(".json")[0];
@@ -781,7 +782,7 @@ export default {
       );
       //this.defaultImport()
       console.log(setConfig);
-      this.resolveSchema()
+      //this.resolveSchema()
     },
     async pullResources() {
       this.tenantOneName = this.tenantOneConfig

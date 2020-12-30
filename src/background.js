@@ -244,6 +244,10 @@ const init = async () => {
     return "= " + "<<EOT".trim() + "\n " + JSON.stringify(object) + "\n EOT"
   } 
 
+  function getUniqueListBy(arr, key) {
+    return [...new Map(arr.map(item => [item[key], item])).values()]
+}
+
   class OauthApp {
     constructor(app) {
       this.label = app.label;
@@ -947,7 +951,8 @@ const init = async () => {
           })
         }
         if (oktaJson.idps) {
-          oktaJson.idps.forEach(function (idp) {
+          var uniqueIdps = getUniqueListBy(oktaJson.idps, "id")
+          uniqueIdps.forEach(function (idp) {
             var idpModel = new ModelCreator({ type: idp.type, resource: idp })
             itemsToWrite.push(idpModel.model.finalForm)
           })
@@ -1431,7 +1436,16 @@ const init = async () => {
     var orgname = config.url.split("https://")[1].split(".")[0]
     var orgtype = config.url.split("https://")[1].split(".")[1] + "." + config.url.split("https://")[1].split(".")[2]
     var tfFile =
-      `provider "okta" {
+      `terraform {
+        required_providers {
+          okta = {
+            source = "oktadeveloper/okta"
+            version = "~> 3.6"
+          }
+        }
+      }
+
+      provider "okta" {
       org_name  = "${orgname}" 
       api_token = "${config.apiToken}"
       base_url  = "${orgtype}"
@@ -1481,8 +1495,24 @@ const init = async () => {
       fs.mkdirSync(dir);
       fs.writeFileSync(supportpath + configDir + "/" + "init.tf", tfFile)
       fs.writeFileSync(supportpath + configDir + "/" + "default.tf", defaults)
+      child = exec("terraform init", {cwd: supportpath + configDir},
+      function (error, stdout, stderr) {
+        if(error) {
+          res.send({"error": error})
+        } else {
+          res.send({"message": stdout})
+        }
+      });
       res.send({ message: "file was overwritten" })
     } else if(!fs.existsSync(supportpath + configDir + "/" + "default.tf")) {
+      child = exec("terraform init", {cwd: supportpath + configDir},
+      function (error, stdout, stderr) {
+        if(error) {
+          res.send({"error": error})
+        } else {
+          res.send({"message": stdout})
+        }
+      });
       fs.writeFileSync(supportpath + configDir + "/" + "default.tf", defaults);
       res.send({ message: "file was overwritten" })
     }
